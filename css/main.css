@@ -1,1 +1,27 @@
-﻿
+﻿body{
+	border:0;
+	margin:0;
+	padding:0;
+}
+button{
+	height:50px;
+	width:50%;
+	float:left;
+	margin:0;
+	border:0;
+	padding:0;
+	font: bold 20px Georgia,serif;
+	letter-spacing:20px;
+}
+body>button{
+	border-right:1px solid #FFFAF0;
+}
+#writing{
+	clear:both;
+	padding:0;
+	border:0;
+	margin:0;
+}
+img[src="img/model.png"]{
+	display:none;
+}
