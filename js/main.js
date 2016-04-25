@@ -1,9 +1,16 @@
-﻿function parameter(){
-	this.x=[];
-	this.y=[];
-	this.time=[];
-	this.pressure=[];
-	this.count=0;
+﻿//parameter对象保存着一个汉字的所有信息
+function parameter(){
+	this.x=[];//x坐标
+	this.y=[];//y坐标
+	this.time=[];//时间
+	this.speed=[];//速度
+	this.pressure=[];//压力
+	this.count=0;//数组索引
+	this.distance=[];//距离
+	//以下是初始值
+	this.gaoss=1.3;//高斯初始值
+	this.minPress=0.05;
+	this.maxPress=0.3;
 }
 parameter.prototype={
 	constructor:parameter,
@@ -12,30 +19,49 @@ parameter.prototype={
 		this.y.push(y);
 		this.time.push(time);
 		this.count++;
-		if(this.x.length>1){
-			this.pressure.push(Math.sqrt(Math.pow(this.x[this.x.length-1]-this.x[this.x.length-2],2)+Math.pow(this.y[this.y.length-1]-this.y[this.y.length-2],2))/(this.time[this.count-1]-this.time[this.count-2]));
+		if(this.count<=1){//加入初试值
+			this.pressure.push(this.maxPress);
+			this.speed.push(0);
+			this.distance.push(0);
 		}else{
-			this.pressure.push(0);
+			this.chars();//速度计算函数，包括计算距离并且加入了距离的值
 		}
+	},//压入x,y,time进入parameter对象
+	gaussian: function(v, gauss) {
+		return ((1/(Math.sqrt(2*Math.PI)*gauss))*Math.pow(Math.E,-(v*v)/(2*gauss*gauss)));
+	},
+	chars:function(){
+		var ratio=this.maxPress/this.gaussian(0,this.gaoss);
+		var time=this.time[this.count-1]-this.time[this.count-2];
+		var distance=Math.sqrt(Math.pow(this.x[this.count-1]-this.x[this.count-2],2)+
+			Math.pow(this.y[this.count-1]-this.y[this.count-2],2));
+		this.distance.push(distance);
+		if(time==0){
+			this.speed[this.count-1]=this.speed[this.count-2]
+		}else{
+			this.speed[this.count-1]=distance/time;
+		}
+		if(this.count>2){
+			this.speed[this.count-1]=this.speed[this.count-1]*0.6+this.speed[this.count-2]*0.3+this.speed[this.count-3]*0.1;
+		}
+		var speed=this.gaussian(this.speed[this.count-1],this.gaoss);
+		this.pressure[this.count-1]=(ratio*speed);
+		if(this.pressure[this.count-1]<this.minPress){
+			this.pressure[this.count-1]=this.minPress;
+		}
+		this.pressure[this.count-1]=(this.pressure[this.count-1]+this.pressure[this.count-2])/2;
 	},
 	clearAll:function(){
 		this.x=[];
 		this.y=[];
 		this.time=[];
+		this.speed=[];
 		this.pressure=[];
 		this.count=0;
+		this.distance=[];
 	}
 };
 /************************************************************/
-var canvas=document.getElementById("writing");
-var ctx=canvas.getContext("2d");
-function screencanvas(){	
-	canvas.width=document.documentElement.clientWidth;
-	canvas.height=document.documentElement.clientHeight-55;
-	qt();
-}
-window.addEventListener("load",screencanvas,true);
-window.addEventListener("resize",screencanvas,true);
 function dl(context,x1,y1,x2,y2,dashLength){
 	dashLength=dashLength===undefined?5:dashLength;
 	var deltaX=x2-x1;
@@ -47,7 +73,7 @@ function dl(context,x1,y1,x2,y2,dashLength){
 	}
 	context.stroke();
 }
-function qt(){
+function qt(ctx){
 ctx.beginPath();
 ctx.strokeStyle='black';
 ctx.lineWidth=1.5;
@@ -61,7 +87,21 @@ dl(ctx,0,0,ctx.canvas.width,ctx.canvas.height,10);
 dl(ctx,0,ctx.canvas.height,ctx.canvas.width,0,10);
 ctx.closePath();
 }
+(function (){
+function screencanvas(){	
+	var canvas=document.getElementById("writing");
+	var ctx=canvas.getContext("2d");
+	canvas.width=document.documentElement.clientWidth;
+	canvas.height=document.documentElement.clientHeight-55;
+	qt(ctx);
+}
+window.addEventListener("load",screencanvas,true);
+window.addEventListener("resize",screencanvas,true);
+})();
 /****************************************************************/
+(function(){
+var canvas=document.getElementById("writing");
+var ctx=canvas.getContext("2d");
 var image=document.getElementById("model");
 document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
 touch =("createTouch" in document);
@@ -86,6 +126,7 @@ canvas['on'+MoveEvent]=function(e){
 		var time=new Date().getTime();
 		charData.pushAll(x,y,time);
 		drawPoint(charData.count-1,charData);
+		console.log(charData);
 	}
 }
 canvas.onmouseout=function(e){
@@ -94,43 +135,20 @@ canvas.onmouseout=function(e){
 canvas['on'+EndEvent]=function(e){
 	lock=false;
 }
-/*****************************************************************/
 function drawPoint(r,d){
-		var a1=jl(d.x[r-1],d.y[r-1],d.x[r],d.y[r]);
-		var sampleNumber=parseInt(a1/0.5);
-	if(locks[r-1]&& r ==1){
+		var sampleNumber=parseInt(d.distance[r]/0.5);
 		for(var u=0;u<sampleNumber;u++){
 			var t=u/(sampleNumber-1);
-			var x1=(1.0-t)*x[r-1]+t*x[r];
-			var y1=(1.0-t)*y[r-1]+t*y[r];
-			var w1=(1.0-t)*w[r-1]+t*w[r];	
-			ctx.drawImage(image,x1-w1,y1-w1,w1*2,w1*2);  		
+			var x1=(1.0-t)*d.x[r-1]+t*d.x[r];
+			var y1=(1.0-t)*d.y[r-1]+t*d.y[r];
+			var w1=(1.0-t)*d.pressure[r-1]+t*d.pressure[r];	
+			ctx.drawImage(image,x1-w1*50,y1-w1*50,w1*100,w1*100);  		
 		}
-	}
-if(locks[r-2] && r>1&&locks[r-1]){	
-		var xFirst = (x[r-2] + x[r-1]) * 0.5; 
-		var yFirst = (y[r-2] + y[r-1]) * 0.5; 
-		var wFirst = (w[r-2] + w[r-1]) * 0.5; 
-
-		var xSecond = (x[r] + x[r-1]) * 0.5; 
-		var ySecond = (y[r] + y[r-1]) * 0.5; 
-		var wSecond = (w[r] + w[r-1]) * 0.5; 
-			//Now we perform a Beizer evaluation 	
-		for(var u = 0; u < sampleNumber; u++){
-			var t = u/(sampleNumber-1);
-				
-			var x1=(1.0-t)*(1.0-t)*xFirst + 2 * t * (1-t) * x[r-1] + t * t * xSecond;
-			var y1=(1.0-t)*(1.0-t)*yFirst + 2 * t * (1-t) * y[r-1] + t * t * ySecond;
-			var w1=(1.0-t)*(1.0-t)*wFirst + 2 * t * (1-t) * w[r-1] + t * t * wSecond;
-				
-			ctx.drawImage(image,x1-w1,y1-w1,w1*2,w1*2);  		
-		}
-	}
 }	
-function jl(x1,y1,x2,y2){//距离函数
-	return (Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
-}///////////////距离函数	
-//use gaussian function to simulate the distribution 	
-function sudu1(v1){
-	return ((1/(Math.sqrt(2*Math.PI)*r1))*Math.pow(Math.E,-(v1*v1)/(2*r1*r1)));
-}
+var btn=document.getElementById("btnClear");
+btn.addEventListener("click",function(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	charData.clearAll();qt(ctx);
+},false);
+})();
+/*****************************************************************/
