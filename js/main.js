@@ -7,10 +7,12 @@ function parameter(){
 	this.pressure=[];//压力
 	this.count=0;//数组索引
 	this.distance=[];//距离
-	//以下是初始值
+	this.locks=[];//汉字锁数组，用来防止笔画之间的链接
+	//以下是参数设置
 	this.gaoss=1.3;//高斯初始值
 	this.minPress=0.05;
-	this.maxPress=0.3;
+	this.maxPress=0.2;
+	this.width=50;
 }
 parameter.prototype={
 	constructor:parameter,
@@ -19,7 +21,7 @@ parameter.prototype={
 		this.y.push(y);
 		this.time.push(time);
 		this.count++;
-		if(this.count<=1){//加入初试值
+		if(!(this.locks[this.count-1])){//加入初试值
 			this.pressure.push(this.maxPress);
 			this.speed.push(0);
 			this.distance.push(0);
@@ -59,6 +61,7 @@ parameter.prototype={
 		this.pressure=[];
 		this.count=0;
 		this.distance=[];
+		this.locks=[];
 	}
 };
 /************************************************************/
@@ -91,8 +94,9 @@ ctx.closePath();
 function screencanvas(){	
 	var canvas=document.getElementById("writing");
 	var ctx=canvas.getContext("2d");
+	var btnClear=document.getElementById("btnClear");
 	canvas.width=document.documentElement.clientWidth;
-	canvas.height=document.documentElement.clientHeight-55;
+	canvas.height=document.documentElement.clientHeight-btnClear.offsetHeight-5;
 	qt(ctx);
 }
 window.addEventListener("load",screencanvas,true);
@@ -115,6 +119,7 @@ canvas['on'+StartEvent]=function(e){
 	var x=t.pageX-t.target.offsetLeft;
 	var y=t.pageY-t.target.offsetTop;
 	var time=new Date().getTime();
+	charData.locks.push(false);
 	charData.pushAll(x,y,time);
 	lock=true;
 }
@@ -124,6 +129,7 @@ canvas['on'+MoveEvent]=function(e){
 		var x=t.pageX-t.target.offsetLeft;
 		var y=t.pageY-t.target.offsetTop;	  
 		var time=new Date().getTime();
+		charData.locks.push(true);
 		charData.pushAll(x,y,time);
 		drawPoint(charData.count-1,charData);
 		console.log(charData);
@@ -139,16 +145,92 @@ function drawPoint(r,d){
 		var sampleNumber=parseInt(d.distance[r]/0.5);
 		for(var u=0;u<sampleNumber;u++){
 			var t=u/(sampleNumber-1);
-			var x1=(1.0-t)*d.x[r-1]+t*d.x[r];
-			var y1=(1.0-t)*d.y[r-1]+t*d.y[r];
-			var w1=(1.0-t)*d.pressure[r-1]+t*d.pressure[r];	
-			ctx.drawImage(image,x1-w1*50,y1-w1*50,w1*100,w1*100);  		
+			var x=(1.0-t)*d.x[r-1]+t*d.x[r];
+			var y=(1.0-t)*d.y[r-1]+t*d.y[r];
+			var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;	
+			ctx.drawImage(image,x-w,y-w,w*2,w*2);  		
 		}
 }	
-var btn=document.getElementById("btnClear");
-btn.addEventListener("click",function(){
+function drawPointAll(d){
+	for(var r=0;r<d.count;r++){
+		if(d.locks[r]){
+			var sampleNumber=parseInt(d.distance[r]/0.5);
+			for(var u=0;u<sampleNumber;u++){
+				var t=u/(sampleNumber-1);
+				var x=(1.0-t)*d.x[r-1]+t*d.x[r];
+				var y=(1.0-t)*d.y[r-1]+t*d.y[r];
+				var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;	
+				ctx.drawImage(image,x-w,y-w,w*2,w*2);  		
+			}
+		}
+	}
+}
+var btnClear=document.getElementById("btnClear");
+var btnSave=document.getElementById("btnSave");
+var renew=document.getElementById("renew");
+var nextchars=document.getElementById("nextchars");
+//var tip=document.getElementById("tip");
+var currentChar=0,totalchar=0;
+var div=document.getElementById("tip");
+var count=div.firstChild.firstChild;
+var canvasURLArray=[];
+btnClear.addEventListener("click",function (){
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	charData.clearAll();qt(ctx);
+
+},false);
+btnSave.addEventListener("click",function(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	drawPointAll(charData);
+	var image=canvas.toDataURL("image/png");	
+	qt(ctx);
+	if(canvasURLArray.length){
+		var w=window.open("second.html","_blank"),tmp="";
+		//dataURL = image.replace("image/png", "image/octet-stream");
+		//document.location.href = dataURL;
+		w.onload=function(){
+			var wDiv=w.document.getElementById("secWriting");
+			for(var i=0;i<canvasURLArray.length;i++){
+				tmp+="<img src='"+canvasURLArray[i]+"' width=\"20%\" height=\"20%\" />";
+			}
+			wDiv.innerHTML=tmp;
+		}
+	}else{
+		alert("没有汉字");
+	}
+},false);
+/*prechars.addEventListener("click",function(){
+	if(currentChar>1){
+		currentChar--;
+		count.nodeValue=currentChar+"/"+(totalchar);
+	}else{
+		alert("已经到达第一个汉字了！");
+	}
+},false);*/
+nextchars.addEventListener("click",function(){
+	currentChar++;
+	if(currentChar>totalchar){
+		count.nodeValue=currentChar+"/"+(++totalchar);
+		//ctx.clearRect(0,0,canvas.width,canvas.height);
+		//charData.clearAll();qt(ctx);
+	}else{
+		count.nodeValue=currentChar+"/"+(totalchar);
+	}	
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	//charData.clearAll();
+	drawPointAll(charData);
+	var image=canvas.toDataURL("image/png");	
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	charData.clearAll();
+	qt(ctx);
+	canvasURLArray.push(image);
+},false);
+renew.addEventListener("click",function(){
+	canvasURLArray=[];
+	charData.clearAll();
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	qt(ctx);currentChar=0;totalchar=0;
+	count.nodeValue=currentChar+"/"+(totalchar);
 },false);
 })();
 /*****************************************************************/
