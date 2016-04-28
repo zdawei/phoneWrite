@@ -65,6 +65,10 @@ parameter.prototype={
 	}
 };
 /************************************************************/
+var canvas=document.createElement("canvas");
+canvas.id="writing";
+document.body.insertBefore(canvas,document.body.lastChild);
+var ctx=canvas.getContext("2d");
 function dl(context,x1,y1,x2,y2,dashLength){
 	dashLength=dashLength===undefined?5:dashLength;
 	var deltaX=x2-x1;
@@ -90,10 +94,8 @@ dl(ctx,0,0,ctx.canvas.width,ctx.canvas.height,10);
 dl(ctx,0,ctx.canvas.height,ctx.canvas.width,0,10);
 ctx.closePath();
 }
-(function (){
 function screencanvas(){	
-	var canvas=document.getElementById("writing");
-	var ctx=canvas.getContext("2d");
+	//var canvas=document.getElementById("writing");
 	var btnClear=document.getElementById("btnClear");
 	canvas.width=document.documentElement.clientWidth;
 	canvas.height=document.documentElement.clientHeight-btnClear.offsetHeight-5;
@@ -101,12 +103,22 @@ function screencanvas(){
 }
 window.addEventListener("load",screencanvas,true);
 window.addEventListener("resize",screencanvas,true);
-})();
 /****************************************************************/
 (function(){
-var canvas=document.getElementById("writing");
-var ctx=canvas.getContext("2d");
-var image=document.getElementById("model");
+//var image=document.getElementById("model");
+//image.crossOrigin="Anonymous";
+var image =document.createElement("img");
+image.src="img/model.png";
+var btnClear=document.getElementById("btnClear");
+var btnSave=document.getElementById("btnSave");
+//var renew=document.getElementById("tip");
+var nextchars=document.getElementById("nextchars");
+var renew=document.getElementById("renew");
+//var tip=document.getElementById("tip");
+var currentChar=0,totalchar=0;
+var div=document.getElementById("tip");
+var count=div.firstChild.firstChild;
+var canvasURLArray=[],charDatas=[];
 document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
 touch =("createTouch" in document);
 StartEvent = touch ? "touchstart" : "mousedown";
@@ -132,7 +144,7 @@ canvas['on'+MoveEvent]=function(e){
 		charData.locks.push(true);
 		charData.pushAll(x,y,time);
 		drawPoint(charData.count-1,charData);
-		console.log(charData);
+		//console.log(charData);
 	}
 }
 canvas.onmouseout=function(e){
@@ -165,36 +177,29 @@ function drawPointAll(d){
 		}
 	}
 }
-var btnClear=document.getElementById("btnClear");
-var btnSave=document.getElementById("btnSave");
-var renew=document.getElementById("renew");
-var nextchars=document.getElementById("nextchars");
-//var tip=document.getElementById("tip");
-var currentChar=0,totalchar=0;
-var div=document.getElementById("tip");
-var count=div.firstChild.firstChild;
-var canvasURLArray=[];
 btnClear.addEventListener("click",function (){
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	charData.clearAll();qt(ctx);
-
 },false);
 btnSave.addEventListener("click",function(){
-	ctx.clearRect(0,0,canvas.width,canvas.height);
-	drawPointAll(charData);
-	var image=canvas.toDataURL("image/png");	
+	//ctx.clearRect(0,0,canvas.width,canvas.height);
+	//drawPointAll(charData);
+	//var image=canvas.toDataURL("image/png");	
 	qt(ctx);
-	if(canvasURLArray.length){
-		var w=window.open("second.html","_blank"),tmp="";
+	if(charDatas.length){
 		//dataURL = image.replace("image/png", "image/octet-stream");
 		//document.location.href = dataURL;
-		w.onload=function(){
+		var dataChar=JSON.stringify(charDatas);
+		localStorage.setItem("dataChars",dataChar);
+		var w=window.open("second.html","_self");//,tmp="";
+		/*w.onload=function(){
 			var wDiv=w.document.getElementById("secWriting");
-			for(var i=0;i<canvasURLArray.length;i++){
-				tmp+="<img src='"+canvasURLArray[i]+"' width=\"20%\" height=\"20%\" />";
+			for(var i=0;i<charDatas.length;i++){
+				//tmp+="<img src='"+canvasURLArray[i]+"' width=\"20%\" height=\"20%\" />";
+				//tmp+="<div><canvas></canvas></div>"
 			}
 			wDiv.innerHTML=tmp;
-		}
+		}*/
 	}else{
 		alert("没有汉字");
 	}
@@ -209,25 +214,31 @@ btnSave.addEventListener("click",function(){
 },false);*/
 nextchars.addEventListener("click",function(){
 	currentChar++;
-	if(currentChar>totalchar){
+	if(currentChar>totalchar&&currentChar<=10){
 		count.nodeValue=currentChar+"/"+(++totalchar);
 		//ctx.clearRect(0,0,canvas.width,canvas.height);
 		//charData.clearAll();qt(ctx);
-	}else{
-		count.nodeValue=currentChar+"/"+(totalchar);
+	}else if(currentChar>10){
+		count.nodeValue=(--currentChar)+"/"+(totalchar);
+		return alert("字数超过限制");
 	}	
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	//charData.clearAll();
-	drawPointAll(charData);
-	var image=canvas.toDataURL("image/png");	
+	//drawPointAll(charData);
+	//var image=canvas.toDataURL("image/png");	
 	ctx.clearRect(0,0,canvas.width,canvas.height);
-	charData.clearAll();
+	//charData.clearAll();
 	qt(ctx);
-	canvasURLArray.push(image);
+	//canvasURLArray.push(image);
+	charDatas.push(charData);
+	charData=new parameter();
+	//console.log(charDatas.length);
+
 },false);
 renew.addEventListener("click",function(){
 	canvasURLArray=[];
 	charData.clearAll();
+	charDatas=[];
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	qt(ctx);currentChar=0;totalchar=0;
 	count.nodeValue=currentChar+"/"+(totalchar);
