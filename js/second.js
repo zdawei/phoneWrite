@@ -1,7 +1,18 @@
-var wDiv=document.getElementById("secWriting");
 var btnBack=document.getElementById("btnBack");
-var btnClear=document.getElementById("btnClear");
-var setchar=document.getElementById("setchar");
+var setchar=document.getElementById("setChar");
+var insertPic=document.getElementById("insertPic");
+var picShare=document.getElementById("picShare");
+var setCharNum=0,picInsert=0;
+/*var style=document.querySelector(".setChar");
+with(style.style){
+  //display="none";
+  position="absolute";
+  left="-100%";//35%
+  top="25%";
+  backgroundColor="RGBA(200,200,200,0.7)";
+  height="25%";
+  width="25%";
+}*/
 /////////////////////////////////////////////
 var canvas=document.createElement("canvas");
 canvas.id="writing";
@@ -9,17 +20,26 @@ document.body.insertBefore(canvas,document.body.lastChild);
 var ctx=canvas.getContext("2d");
 var image =document.createElement("img");
 image.src="img/model.png";
+/////////////////////////////////////////
+var img1 =document.createElement("img");
+img1.src="img/img1.png";
+var img2 =document.createElement("img");
+img2.src="img/2.png";
+var img3 =document.createElement("img");
+img3.src="img/3.png";
+var img4 =document.createElement("img");
+img4.src="img/4.png";
+//////////////////////////////////////////
 function screencanvas(){  
   //var canvas=document.getElementById("writing");
-  var btnClear=document.getElementById("btnClear");
   canvas.width=document.documentElement.clientWidth;
-  canvas.height=document.documentElement.clientHeight-btnClear.offsetHeight-5;
+  canvas.height=document.documentElement.clientHeight-btnBack.offsetHeight-5;
 }
 window.addEventListener("load",screencanvas,true);
 window.addEventListener("resize",screencanvas,true);
 /////////////////////////////////////////////////
 function drawPointAll(d,i){
-  var col=3,row=6,beishu=90,widthbeishu=2,permY=parseInt(i/col),permX=i%col;
+  var col=3,row=5,beishu=90,widthbeishu=3,permY=parseInt(i/col),permX=i%col;
   var width=canvas.width/col,height=canvas.height/row;
   for(var r=0;r<d.count;r++){
     if(d.locks[r]){
@@ -40,40 +60,54 @@ function writingChar(){
     drawPointAll(dataChars[i],i);     
   }
 }
+function setCharfunc(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  switch(++setCharNum){
+    case 0:writingChar();break;
+    case 1:var dataChars=JSON.parse(localStorage.dataChars);
+            var count=[0,3,6,9,12,1,4,7,10,13,2,5,8,11,14];
+            for(var i=0;i<dataChars.length;i++){
+                drawPointAll(dataChars[i],count[i]);
+            }break;
+    case 2:var dataChars=JSON.parse(localStorage.dataChars);
+            var count=[2,5,8,11,14,1,4,7,10,13,0,3,6,9,12];
+            for(var i=0;i<dataChars.length;i++){
+                drawPointAll(dataChars[i],count[i]);
+            }break;
+    case 3:var dataChars=JSON.parse(localStorage.dataChars);
+            var count=[2,1,5,0,4,8,3,7,11,6,10,14,9,13,12];
+            for(var i=0;i<dataChars.length;i++){
+                drawPointAll(dataChars[i],count[i]);
+            }break;
+    default:var dataChars=JSON.parse(localStorage.dataChars);
+            var count=[0,1,2,5,8,11,14,13,12,9,6,3,4,7,10];
+            for(var i=0;i<dataChars.length;i++){
+                drawPointAll(dataChars[i],count[i]);
+            }setCharNum=-1;
+  }  
+}
+function setpicInsert(){//picInsert=0
+  //ctx.clearRect(0,0,canvas.width,canvas.height);
+  switch(++picInsert){
+    case 0:writingChar();break;
+    case 1:ctx.drawImage(img1,canvas.width,canvas.height);break;
+    case 2:ctx.drawImage(img2,canvas.width,canvas.height);break;
+    case 3:ctx.drawImage(img3,canvas.width,canvas.height);break;
+    case 4:ctx.drawImage(img4,canvas.width,canvas.height);break;
+    default:picInsert=-1;
+  }  
+}
 window.addEventListener("load",writingChar,false);
-btnClear.addEventListener("click",function (){
-  if(wDiv.childNodes.length>0){
-    wDiv.removeChild(wDiv.lastChild); 
-  }else{
-    alert("已经是最后一个汉字了");
-  }     
-},false);
 btnBack.addEventListener("click",function (){
-  //window.close();
   history.go(-1);
 },false);
-/*setchar.addEventListener("click",function (){
-  var divObj=document.getElementById("secWriting").firstChild;
-  var moveFlag=false;
-  divObj.style.position="relative";
-    divObj.ontouchstart=function(e){
-    moveFlag=true;
-    var clickEvent=window.event||e;
-    var mwidth=clickEvent.clientX-divObj.offsetLeft;
-    var mheight=clickEvent.clientY-divObj.offsetTop;
-    divObj.ontouchmove=function(e){
-      var moveEvent=window.event||e;
-      if(moveFlag){
-        divObj.style.left=moveEvent.clientX-mwidth+"px";
-        divObj.style.top=moveEvent.clientY-mheight+"px";
-        divObj.ontouchend=function(){
-          moveFlag=false;
-        };
-      }
-    };
-  };
-},false);*/
-//////////////////////////////////////////
+setchar.addEventListener("click",setCharfunc,false);
+insertPic.addEventListener("click",function(){
+  ctx.drawImage(image,canvas.width,canvas.height);
+},false);
+//picShare.addEventListener("click",,false);
 
-    //console.log(localStorage.dataChars);
+
+//////////////////////////////////////////
+console.log(window.picInsert);
 ////////////////////////////////////////////

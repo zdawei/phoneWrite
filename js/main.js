@@ -115,7 +115,7 @@ var btnSave=document.getElementById("btnSave");
 var nextchars=document.getElementById("nextchars");
 var renew=document.getElementById("renew");
 //var tip=document.getElementById("tip");
-var currentChar=0,totalchar=0;
+var currentChar=0,totalchar=15;
 var div=document.getElementById("tip");
 var count=div.firstChild.firstChild;
 var canvasURLArray=[],charDatas=[];
@@ -190,6 +190,7 @@ btnSave.addEventListener("click",function(){
 		//dataURL = image.replace("image/png", "image/octet-stream");
 		//document.location.href = dataURL;
 		var dataChar=JSON.stringify(charDatas);
+		localStorage.removeItem("dataChars");
 		localStorage.setItem("dataChars",dataChar);
 		var w=window.open("second.html","_self");//,tmp="";
 		/*w.onload=function(){
@@ -214,12 +215,12 @@ btnSave.addEventListener("click",function(){
 },false);*/
 nextchars.addEventListener("click",function(){
 	currentChar++;
-	if(currentChar>totalchar&&currentChar<=10){
-		count.nodeValue=currentChar+"/"+(++totalchar);
+	if(currentChar<=totalchar){
+		count.nodeValue="第"+currentChar+"个汉字";
 		//ctx.clearRect(0,0,canvas.width,canvas.height);
 		//charData.clearAll();qt(ctx);
-	}else if(currentChar>10){
-		count.nodeValue=(--currentChar)+"/"+(totalchar);
+	}else if(currentChar>totalchar){
+		count.nodeValue="第"+(--currentChar)+"个汉字";
 		return alert("字数超过限制");
 	}	
 	ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -240,8 +241,8 @@ renew.addEventListener("click",function(){
 	charData.clearAll();
 	charDatas=[];
 	ctx.clearRect(0,0,canvas.width,canvas.height);
-	qt(ctx);currentChar=0;totalchar=0;
-	count.nodeValue=currentChar+"/"+(totalchar);
+	qt(ctx);currentChar=0;
+	count.nodeValue="当前没写汉字";
 },false);
 })();
 /*****************************************************************/

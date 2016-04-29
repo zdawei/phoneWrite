@@ -30,12 +30,13 @@ img[src="img/model.png"]{
 }
 /***************follow's index.html*************************************/
 #tip{
-	width:60px;
+	width:10%;
+	min-width: 103px;
 	height: 30px;
 	position: absolute;
 	top:10%;
-	right:50%;
-	background-color: rgba(200,200,200,0.5);
+	right:45%;
+	background-color: rgba(200,200,200,0.7);
 }
 #tip>p{
 	padding: 0;
@@ -48,6 +49,6 @@ img[src="img/model.png"]{
 	height:90%;
 	clear:both;
 }
-.secbtn{
-	width:50%;
-}
+/*.setChar>form>input{
+	display: block;
+}*/
