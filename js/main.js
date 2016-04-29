@@ -101,6 +101,7 @@ function screencanvas(){
 	canvas.height=document.documentElement.clientHeight-btnClear.offsetHeight-5;
 	qt(ctx);
 }
+qt(ctx);
 window.addEventListener("load",screencanvas,true);
 window.addEventListener("resize",screencanvas,true);
 /****************************************************************/
