@@ -7,8 +7,18 @@
 	min-height: 267px;	
 }
 button{
-	height:10%;
+	height:8%;
 	width:25%;
+	float:left;
+	margin:0;
+	border:0;
+	padding:0;
+	font: bold 20px Georgia,serif;
+	letter-spacing:20px;
+}
+.total{
+	height:8%;
+	width:50%;
 	float:left;
 	margin:0;
 	border:0;
@@ -30,12 +40,12 @@ img[src="img/model.png"]{
 }
 /***************follow's index.html*************************************/
 #tip{
-	width:10%;
+	width:100%;
 	min-width: 103px;
-	height: 30px;
+	height: 25px;
 	position: absolute;
-	top:10%;
-	right:45%;
+	top:16%;
+	right:0%;
 	background-color: rgba(200,200,200,0.7);
 }
 #tip>p{

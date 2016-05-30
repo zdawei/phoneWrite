@@ -97,8 +97,8 @@ ctx.closePath();
 function screencanvas(){	
 	//var canvas=document.getElementById("writing");
 	var btnClear=document.getElementById("btnClear");
-	canvas.width=document.documentElement.clientWidth;
-	canvas.height=document.documentElement.clientHeight-btnClear.offsetHeight-5;
+	canvas.width=parseInt(document.body.clientWidth);
+	canvas.height=parseInt(document.body.offsetHeight)-parseInt(btnClear.offsetHeight)*2-5;
 	qt(ctx);
 }
 qt(ctx);
@@ -247,3 +247,47 @@ renew.addEventListener("click",function(){
 },false);
 })();
 /*****************************************************************/
+// xml选择汉字
+(function (){
+	var xmlChar = document.getElementById("xmlcharacter");
+	var tmplate = "<form style=\"position : absolute;top:40%;left:20%;\" ><lable>请输入汉字:</lable><input type= \"text\" /></form>"+
+				"<button id=\"yes\" type=\"button\" style=\"position : absolute;bottom:10%;left:20%;width:20%;\">确定</button><button  id = \"cancel\" style=\"position : absolute;bottom:10%;left:41%;width:20%;\" type=\"button\" >取消</button>";
+
+	xmlChar.addEventListener('click',function(e){
+		var divBubble = createElement("div",{
+			position : "absolute",
+			top : "30%",
+			left : "30%",
+			width : "40%",
+			height : "40%",
+			backgroundColor : "green",
+			opacity : "0.8"
+		})
+		document.body.appendChild(divBubble);
+		divBubble.innerHTML = tmplate;
+		var divCancel = document.getElementById("cancel");
+		
+		divCancel.addEventListener('click',function(e){
+			document.body.removeChild(divBubble);
+			divBubble = null;
+		},false);
+		
+		var idYes = document.getElementById("yes");
+		yes.addEventListener("click",function(e){
+			alert("hahaa");
+		},false);
+
+	},false);
+
+
+	function createElement (el,attr){
+		var element = document.createElement(el);
+		switch(el){
+			case "div" : for(var key in attr){
+							element.style[key] = attr[key];
+						 }
+						 break;
+		}
+		return element;
+	}//createElement
+})();
