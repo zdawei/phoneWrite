@@ -245,13 +245,40 @@ renew.addEventListener("click",function(){
 	qt(ctx);currentChar=0;
 	count.nodeValue="当前没写汉字";
 },false);
-})();
+
 /*****************************************************************/
 // xml选择汉字
 (function (){
 	var xmlChar = document.getElementById("xmlcharacter");
-	var tmplate = "<form style=\"position : absolute;top:40%;left:20%;\" ><lable>请输入汉字:</lable><input type= \"text\" /></form>"+
-				"<button id=\"yes\" type=\"button\" style=\"position : absolute;bottom:10%;left:20%;width:20%;\">确定</button><button  id = \"cancel\" style=\"position : absolute;bottom:10%;left:41%;width:20%;\" type=\"button\" >取消</button>";
+	var tmplate = "<form style=\"width:100%;height:50%;position:absolute;top:25%;\" ><lable style=\"position:relative;left:10%;display:block;\">请输入一个汉字:</lable><input id=\"input\" required style=\"display:block;position:relative;left:10%;width:80%;\" type= \"text\" />"+
+				"<input id=\"yes\" type=\"submit\" style=\"position : absolute;bottom:10%;left:10%;width:30%;height:20%\" value= \"确认\" /><input  id = \"cancel\" style=\"position : absolute;bottom:10%;left:60%;width:30%;height:20%;\" type=\"button\" value=\"取消\" /></form>";
+
+
+// 加载xml文档
+       var loadXML = function (xmlFile) {
+            var xmlDoc;
+            if (window.ActiveXObject) {
+                xmlDoc = new ActiveXObject('Microsoft.XMLDOM');//IE浏览器
+                xmlDoc.async = false;
+                xmlDoc.load(xmlFile);
+            }
+            else if (isFirefox=navigator.userAgent.indexOf("Firefox")>0) { //火狐浏览器
+            //else if (document.implementation && document.implementation.createDocument) {//这里主要是对谷歌浏览器进行处理
+                xmlDoc = document.implementation.createDocument('', '', null);
+                xmlDoc.load(xmlFile);
+            }
+            else{ //谷歌浏览器
+              var xmlhttp = new window.XMLHttpRequest();
+                xmlhttp.open("GET",xmlFile,false);
+                xmlhttp.send(null);
+                if(xmlhttp.readyState == 4){
+                xmlDoc = xmlhttp.responseXML.documentElement;
+                } 
+            }
+
+            return xmlDoc;
+        }
+
 
 	xmlChar.addEventListener('click',function(e){
 		var divBubble = createElement("div",{
@@ -274,7 +301,37 @@ renew.addEventListener("click",function(){
 		
 		var idYes = document.getElementById("yes");
 		yes.addEventListener("click",function(e){
-			alert("hahaa");
+			var input = document.getElementById("input");
+			// alert(input.value)
+			if(input.value){
+				var chars = input.value.split("");
+				if(chars.length == 1){
+					var path = "data\\"+chars[0]+".xml";
+					var docXML = loadXML(path);
+					console.log(docXML);
+					var strokes = docXML.getElementsByTagName("Stroke");
+					console.log(strokes);
+					//差不多ok，过两天再写一点
+
+////////////////////////////////////////////
+这里面在整整
+/////////////////////////////////////////////
+
+
+
+
+
+
+
+
+					e.preventDefault();
+				}else{
+					alert("请输入一个汉字!");
+					input.value = "";
+				}
+			}else{
+				return ;
+			}
 		},false);
 
 	},false);
@@ -290,4 +347,7 @@ renew.addEventListener("click",function(){
 		}
 		return element;
 	}//createElement
+
+
+})();
 })();

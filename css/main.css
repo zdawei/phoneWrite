@@ -13,8 +13,8 @@ button{
 	margin:0;
 	border:0;
 	padding:0;
-	font: bold 20px Georgia,serif;
-	letter-spacing:20px;
+	font:  15px Georgia,serif;
+	letter-spacing:10px;
 }
 .total{
 	height:8%;
