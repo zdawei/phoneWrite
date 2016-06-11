@@ -94,7 +94,7 @@ dl(ctx,0,0,ctx.canvas.width,ctx.canvas.height,10);
 dl(ctx,0,ctx.canvas.height,ctx.canvas.width,0,10);
 ctx.closePath();
 }
-function screencanvas(){	
+function screencanvas(){
 	//var canvas=document.getElementById("writing");
 	var btnClear=document.getElementById("btnClear");
 	canvas.width=parseInt(document.body.clientWidth);
@@ -128,7 +128,7 @@ EndEvent = touch ? "touchend" : "mouseup";
 var charData=new parameter();
 var lock=false;
 canvas['on'+StartEvent]=function(e){
- 	var t=touch ? e.touches[0] : e; 
+ 	var t=touch ? e.touches[0] : e;
 	var x=t.pageX-t.target.offsetLeft;
 	var y=t.pageY-t.target.offsetTop;
 	var time=new Date().getTime();
@@ -140,7 +140,7 @@ canvas['on'+MoveEvent]=function(e){
 	if(lock){
 	  var t=touch ? e.touches[0] : e;
 		var x=t.pageX-t.target.offsetLeft;
-		var y=t.pageY-t.target.offsetTop;	  
+		var y=t.pageY-t.target.offsetTop;
 		var time=new Date().getTime();
 		charData.locks.push(true);
 		charData.pushAll(x,y,time);
@@ -160,10 +160,10 @@ function drawPoint(r,d){
 			var t=u/(sampleNumber-1);
 			var x=(1.0-t)*d.x[r-1]+t*d.x[r];
 			var y=(1.0-t)*d.y[r-1]+t*d.y[r];
-			var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;	
-			ctx.drawImage(image,x-w,y-w,w*2,w*2);  		
+			var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;
+			ctx.drawImage(image,x-w,y-w,w*2,w*2);
 		}
-}	
+}
 function drawPointAll(d){
 	for(var r=0;r<d.count;r++){
 		if(d.locks[r]){
@@ -172,8 +172,8 @@ function drawPointAll(d){
 				var t=u/(sampleNumber-1);
 				var x=(1.0-t)*d.x[r-1]+t*d.x[r];
 				var y=(1.0-t)*d.y[r-1]+t*d.y[r];
-				var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;	
-				ctx.drawImage(image,x-w,y-w,w*2,w*2);  		
+				var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;
+				ctx.drawImage(image,x-w,y-w,w*2,w*2);
 			}
 		}
 	}
@@ -185,7 +185,7 @@ btnClear.addEventListener("click",function (){
 btnSave.addEventListener("click",function(){
 	//ctx.clearRect(0,0,canvas.width,canvas.height);
 	//drawPointAll(charData);
-	//var image=canvas.toDataURL("image/png");	
+	//var image=canvas.toDataURL("image/png");
 	qt(ctx);
 	if(charDatas.length){
 		//dataURL = image.replace("image/png", "image/octet-stream");
@@ -223,11 +223,11 @@ nextchars.addEventListener("click",function(){
 	}else if(currentChar>totalchar){
 		count.nodeValue="第"+(--currentChar)+"个汉字";
 		return alert("字数超过限制");
-	}	
+	}
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	//charData.clearAll();
 	//drawPointAll(charData);
-	//var image=canvas.toDataURL("image/png");	
+	//var image=canvas.toDataURL("image/png");
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 	//charData.clearAll();
 	qt(ctx);
@@ -251,8 +251,7 @@ renew.addEventListener("click",function(){
 (function (){
 	var xmlChar = document.getElementById("xmlcharacter");
 	var tmplate = "<form style=\"width:100%;height:50%;position:absolute;top:25%;\" ><lable style=\"position:relative;left:10%;display:block;\">请输入一个汉字:</lable><input id=\"input\" required style=\"display:block;position:relative;left:10%;width:80%;\" type= \"text\" />"+
-				"<input id=\"yes\" type=\"submit\" style=\"position : absolute;bottom:10%;left:10%;width:30%;height:20%\" value= \"确认\" /><input  id = \"cancel\" style=\"position : absolute;bottom:10%;left:60%;width:30%;height:20%;\" type=\"button\" value=\"取消\" /></form>";
-
+				"<input id=\"yes\" type=\"button\" style=\"position : absolute;bottom:10%;left:10%;width:30%;height:20%\" value= \"确认\" /><input  id = \"cancel\" style=\"position : absolute;bottom:10%;left:60%;width:30%;height:20%;\" type=\"button\" value=\"取消\" /></form>";
 
 // 加载xml文档
        var loadXML = function (xmlFile) {
@@ -293,28 +292,38 @@ renew.addEventListener("click",function(){
 		document.body.appendChild(divBubble);
 		divBubble.innerHTML = tmplate;
 		var divCancel = document.getElementById("cancel");
-		
+
 		divCancel.addEventListener('click',function(e){
 			document.body.removeChild(divBubble);
 			divBubble = null;
 		},false);
-		
+
 		var idYes = document.getElementById("yes");
 		yes.addEventListener("click",function(e){
 			var input = document.getElementById("input");
-			// alert(input.value)
 			if(input.value){
 				var chars = input.value.split("");
 				if(chars.length == 1){
 					var path = "data\\"+chars[0]+".xml";
 					var docXML = loadXML(path);
-					console.log(docXML);
+					// console.log(docXML.length);
+					var curchar = new parameter();
 					var strokes = docXML.getElementsByTagName("Stroke");
-					console.log(strokes);
-					//差不多ok，过两天再写一点
+					for(var i = 0;i < strokes.length;i++){
+						var startTime = +strokes[i].getAttribute("startSecond") + strokes[i].getAttribute("startMillisecond");
+						for(var j = 0;j < strokes[i].length;j++){
+							var tmp = +strokes[i][j].getAttribute("deltaTime");
+							startTime += tmp;
+							curchar.pushAll(+strokes[i][j].getAttribute("x"),+strokes[i][j].getAttribute("y"),startTime);
+							console.log(strokes[i].length);
+						}
+					}
+					drawPointAll(curchar);
+
+
 
 ////////////////////////////////////////////
-这里面在整整
+//这里面在整整
 /////////////////////////////////////////////
 
 
@@ -324,7 +333,7 @@ renew.addEventListener("click",function(){
 
 
 
-					e.preventDefault();
+
 				}else{
 					alert("请输入一个汉字!");
 					input.value = "";
