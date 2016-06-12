@@ -272,7 +272,7 @@ renew.addEventListener("click",function(){
                 xmlhttp.send(null);
                 if(xmlhttp.readyState == 4){
                 xmlDoc = xmlhttp.responseXML.documentElement;
-                } 
+                }
             }
 
             return xmlDoc;
@@ -310,14 +310,14 @@ renew.addEventListener("click",function(){
 					var curchar = new parameter();
 					var strokes = docXML.getElementsByTagName("Stroke");
 					for(var i = 0;i < strokes.length;i++){
-						var startTime = +strokes[i].getAttribute("startSecond") + strokes[i].getAttribute("startMillisecond");
-						for(var j = 0;j < strokes[i].length;j++){
-							var tmp = +strokes[i][j].getAttribute("deltaTime");
+						var startTime = +(strokes[i].getAttribute("startSecond") + strokes[i].getAttribute("startMillisecond"));
+						for(var j = 0;j < strokes[i].childNodes.length;j++){
+							var tmp = +strokes[i].childNodes[j].getAttribute("deltaTime");
 							startTime += tmp;
-							curchar.pushAll(+strokes[i][j].getAttribute("x"),+strokes[i][j].getAttribute("y"),startTime);
-							console.log(strokes[i].length);
+							curchar.pushAll(+strokes[i].childNodes[j].getAttribute("x"),+strokes[i].childNodes[j].getAttribute("y"),startTime);
 						}
 					}
+					console.log(curchar);
 					drawPointAll(curchar);
 
 
@@ -333,7 +333,8 @@ renew.addEventListener("click",function(){
 
 
 
-
+				document.body.removeChild(divBubble);
+				divBubble = null;
 				}else{
 					alert("请输入一个汉字!");
 					input.value = "";
