@@ -101,7 +101,6 @@ function screencanvas(){
 	canvas.height=parseInt(document.body.offsetHeight)-parseInt(btnClear.offsetHeight)*2-5;
 	qt(ctx);
 }
-qt(ctx);
 window.addEventListener("load",screencanvas,true);
 window.addEventListener("resize",screencanvas,true);
 /****************************************************************/
@@ -228,7 +227,7 @@ nextchars.addEventListener("click",function(){
 	//charData.clearAll();
 	//drawPointAll(charData);
 	//var image=canvas.toDataURL("image/png");
-	ctx.clearRect(0,0,canvas.width,canvas.height);
+	// ctx.clearRect(0,0,canvas.width,canvas.height);
 	//charData.clearAll();
 	qt(ctx);
 	//canvasURLArray.push(image);
