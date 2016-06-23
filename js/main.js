@@ -317,8 +317,8 @@ renew.addEventListener("click",function(){
 						}
 					}
 					console.log(curchar);
-					drawPointAll(curchar);
-
+					// drawPointAll(curchar);
+					
 
 
 ////////////////////////////////////////////

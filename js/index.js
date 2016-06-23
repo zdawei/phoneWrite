@@ -1,20 +1,15 @@
-var handwritting = function(){
+var W = function(){
 
-  var image =document.createElement("img");
-  image.src="img/model.png";
-  var btnClear=document.getElementById("btnClear");
-  var btnSave=document.getElementById("btnSave");
-  var nextchars=document.getElementById("nextchars");
-  var renew=document.getElementById("renew");
-  var canvas=document.createElement("canvas");
-  canvas.id="writing";
-  document.body.insertBefore(canvas,document.body.lastChild);
-  var ctx=canvas.getContext("2d");
-  var currentChar=0,totalchar=15;
-  var div=document.getElementById("tip");
-  var countChar=div.firstChild.firstChild;
-  var canvasURLArray=[],charDatas=[];
   document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
+  var image = document.createElement("img");
+  image.src = "img/model.png";//笔刷模型
+  var canvas = document.createElement("canvas");
+  canvas.id = "writing";
+  document.body.insertBefore(canvas,document.body.lastChild);
+  var ctx = canvas.getContext("2d");
+  var currentChar = 0,totalchar = 15;
+  var countChar = document.getElementById("tip").firstChild.firstChild;//提示的文本
+  var canvasURLArray = [],charDatas = [];//charDatas 写汉字的保存数组
   var $ = {
   	x = [],//x坐标
   	y = [],//y坐标
@@ -31,28 +26,26 @@ var handwritting = function(){
   	width = 50
   };
 
-  var gaussian = function(v, gauss) {
+  var gaussian = function(v, gauss) {//高斯计算公式
 		return ((1 / (Math.sqrt(2 * Math.PI) * gauss)) * Math.pow(Math.E,-(v * v) / (2 * gauss * gauss)));
 	}
 	var parameter = function(){
 		var ratio = $.maxPress / gaussian(0,$.gaoss);
-		var time = $.time[$.count - 1] - $.time[$.count - 2];
+		var timeGap = $.time[$.count - 1] - $.time[$.count - 2];
 		var distance = Math.sqrt(Math.pow($.x[$.count - 1] - $.x[$.count - 2],2) +
 			Math.pow($.y[$.count - 1] - $.y[$.count - 2],2));
 		$.distance.push(distance);
-		if(time == 0){
+		if(timeGap == 0){
 			$.speed[$.count - 1] = $.speed[$.count - 2];
 		}else{
-			$.speed[$.count - 1] = distance / time;
+			$.speed[$.count - 1] = distance / timeGap;
 		}
 		if($.count > 2){
 			$.speed[$.count - 1] = $.speed[$.count - 1] * 0.6 + $.speed[$.count - 2] * 0.3 + $.speed[$.count - 3] * 0.1;
 		}
 		var speed = gaussian($.speed[$.count - 1],$.gaoss);
 		$.pressure[$.count - 1] = (ratio * speed);
-		if($.pressure[$.count - 1] < $.minPress){
-			$.pressure[$.count - 1] = $.minPress;
-		}
+    $.pressure[$.count - 1] = Math.max(Math.min($.pressure[$.count - 1],$.maxPress),$.minPress);
 		$.pressure[$.count - 1] = ($.pressure[$.count - 1] + $.pressure[$.count - 2]) / 2;
 	}
 
@@ -67,6 +60,7 @@ var handwritting = function(){
   	}
   	context.stroke();
   }
+
   function qt(ctx){
   ctx.beginPath();
   ctx.strokeStyle='black';
@@ -81,6 +75,8 @@ var handwritting = function(){
   dl(ctx,0,ctx.canvas.height,ctx.canvas.width,0,10);
   ctx.closePath();
   }
+//米字格以上 dl qt
+
   function screencanvas(){
   	var btnClear=document.getElementById("btnClear");
   	canvas.width=parseInt(document.body.clientWidth);
@@ -111,80 +107,103 @@ var handwritting = function(){
     return result;
   }
 
-  btnClear.addEventListener("click",clearPrint,false);
+  function pushAll(x,y,time,lock){
+    //只提供x,y,time,lock自动计算所有参数，并全部压入
+    $.x.push(x);
+    $.y.push(y);
+    $.time.push(time);
+    $.locks.push(lock);
+    $.count++;
+    if(!($.locks[$.count - 1]) || $.count - 1 == 0){//加入每个笔画头一节点的初试值
+      $.speed.push(0);
+      $.pressure.push($.maxPress);
+      $.distance.push(0);
+    }else{
+      parameter();//速度计算函数，包括计算距离并且加入了距离的值
+    }
+  }
+
+  function clearCharData(){//只清楚数据，不清楚画板
+    $.x=[];
+    $.y=[];
+    $.time=[];
+    $.speed=[];
+    $.pressure=[];
+    $.count=0;
+    $.distance=[];
+    $.locks=[];
+  }
+
+  function nextChar(){
+    charDatas.push(cloneCharData($));
+    clearPrint();
+  }
+
+
+
+  return {
+
+    ctx : ctx,
+    pushAll : pushAll,
+    clearPrint : clearPrint,
+    nextchar : nextChar
+
+
+    // function drawPoint(count,d){
+    //   // d是charData对象,count是数组索引
+    // 		var sampleNumber=parseInt(d.distance[count]/0.5);
+    // 		for(var u=0;u<sampleNumber;u++){
+    // 			var t=u/(sampleNumber-1);
+    // 			var x=(1.0-t)*d.x[count-1]+t*d.x[count];
+    // 			var y=(1.0-t)*d.y[count-1]+t*d.y[count];
+    // 			var w=(1.0-t)*d.pressure[count-1]*d.width+t*d.pressure[count]*d.width;
+    // 			ctx.drawImage(image,x-w,y-w,w*2,w*2);
+    // 		}
+    // },
+
+    // drawPointAll = function (d){
+    //   // d是charData对象，r是数组索引
+    // 	for(var r=0;r<d.count;r++){
+    // 		if(d.locks[r]){
+    // 			var sampleNumber=parseInt(d.distance[r]/0.5);
+    // 			for(var u=0;u<sampleNumber;u++){
+    // 				var t=u/(sampleNumber-1);
+    // 				var x=(1.0-t)*d.x[r-1]+t*d.x[r];
+    // 				var y=(1.0-t)*d.y[r-1]+t*d.y[r];
+    // 				var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;
+    // 				ctx.drawImage(image,x-w,y-w,w*2,w*2);
+    // 			}
+    // 		}
+    // 	}
+    // }
+
+  };//return
+}();
+
+(function(){
+  var btnClear = document.getElementById("btnClear");
+  var btnSave = document.getElementById("btnSave");
+  var nextchars = document.getElementById("nextchars");
+  var renew = document.getElementById("renew");
+  // 以上四个获取四个按钮  
+  btnClear.addEventListener("click",W.clearPrint,false);
+
   nextchars.addEventListener("click",function(){
-  	currentChar++;
-  	if(currentChar<=totalchar){
-  		countChar.nodeValue="第"+currentChar+"个汉字";
-  	}else if(currentChar>totalchar){
-  		countChar.nodeValue="第"+(--currentChar)+"个汉字";
-  		return alert("字数超过限制");
-  	}
+    //////////////////////////////////
+    //////////////////////////
+    //以下没有写
+    ///////////////////////
+    ////////////////////////////////////
+   currentChar++;
+   if(currentChar<=totalchar){
+     countChar.nodeValue="第"+currentChar+"个汉字";
+   }else if(currentChar>totalchar){
+     countChar.nodeValue="第"+(--currentChar)+"个汉字";
+     return alert("字数超过限制");
+   }
     var tmpCharData = cloneCharData($);
     charDatas.push(tmpCharData);
     clearPrint();
   },false);
 
-  return {
-
-    ctx:ctx,
-
-    pushAll:function(x,y,time,lock){
-      //只提供x,y,time,lock自动计算所有参数，并全部压入
-      $.x.push(x);
-      $.y.push(y);
-      $.time.push(time);
-      $.locks.push(lock);
-      $.count++;
-      if(!($.locks[$.count - 1]) || $.count - 1 == 0){//加入每个笔画头一节点的初试值
-        $.speed.push(0);
-        $.pressure.push($.maxPress);
-        $.distance.push(0);
-      }else{
-        parameter();//速度计算函数，包括计算距离并且加入了距离的值
-      }
-    },
-
-    clearCharData:function(){
-  		$.x=[];
-  		$.y=[];
-  		$.time=[];
-  		$.speed=[];
-  		$.pressure=[];
-  		$.count=0;
-  		$.distance=[];
-  		$.locks=[];
-  	},
-
-    clearPrint:clearPrint,
-
-    function drawPoint(count,d){
-      // d是charData对象,count是数组索引
-    		var sampleNumber=parseInt(d.distance[count]/0.5);
-    		for(var u=0;u<sampleNumber;u++){
-    			var t=u/(sampleNumber-1);
-    			var x=(1.0-t)*d.x[count-1]+t*d.x[count];
-    			var y=(1.0-t)*d.y[count-1]+t*d.y[count];
-    			var w=(1.0-t)*d.pressure[count-1]*d.width+t*d.pressure[count]*d.width;
-    			ctx.drawImage(image,x-w,y-w,w*2,w*2);
-    		}
-    },
-
-    function drawPointAll(d){
-      // d是charData对象，r是数组索引
-    	for(var r=0;r<d.count;r++){
-    		if(d.locks[r]){
-    			var sampleNumber=parseInt(d.distance[r]/0.5);
-    			for(var u=0;u<sampleNumber;u++){
-    				var t=u/(sampleNumber-1);
-    				var x=(1.0-t)*d.x[r-1]+t*d.x[r];
-    				var y=(1.0-t)*d.y[r-1]+t*d.y[r];
-    				var w=(1.0-t)*d.pressure[r-1]*d.width+t*d.pressure[r]*d.width;
-    				ctx.drawImage(image,x-w,y-w,w*2,w*2);
-    			}
-    		}
-    	}
-    }
-
-  };//return
-}();
+})();
