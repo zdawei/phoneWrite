@@ -203,6 +203,9 @@ var W = function(){
     if(charCount <= 1){
       return alert("已经是第一个字了!");
     }
+    // if($.count != 0){
+    //   charDatas[charCount - 1] = cloneCharData($);
+    // }
     setCountChar(-1);
     charDatas[charCount] = cloneCharData($);
     clearPrint();
