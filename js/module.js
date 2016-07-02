@@ -12,6 +12,11 @@
 
   prechars.addEventListener("click",W.preChar,false);
 
+  // btnSave.addEventListener("click",function	(){
+  // 	var test = prompt("a a a ","d d d ");
+  // 	alert(test)
+  // },false);
+
 })();
 
 (function(){
@@ -49,122 +54,41 @@
 
 (function(){
 	//顶导两个按钮点击事件模块
-  	var handwriting = document.getElementById("handwriting");
 	var xmlChar = document.getElementById("xmlcharacter");
-	var tmplate = "<form style=\"width:100%;height:50%;position:absolute;top:25%;\" ><lable style=\"position:relative;left:10%;display:block;\">请输入一个汉字:</lable><input id=\"input\" required style=\"display:block;position:relative;left:10%;width:80%;\" type= \"text\" />"+
-				"<input id=\"yes\" type=\"button\" style=\"position : absolute;bottom:10%;left:10%;width:30%;height:20%\" value= \"确认\" /><input  id = \"cancel\" style=\"position : absolute;bottom:10%;left:60%;width:30%;height:20%;\" type=\"button\" value=\"取消\" /></form>";
-	var divBubble = createElement("div",{
-		position : "absolute",
-		top : "30%",
-		left : "30%",
-		width : "40%",
-		height : "40%",
-		backgroundColor : "green",
-		opacity : "0.8"
-	});
-	divBubble.id = "divBubble";
+  	var handwriting = document.getElementById("handwriting");
 
   	var loadXML = function (xmlFile) {
 	// 加载xml文档
     	var xmlDoc;
-	    var xmlhttp = new window.XMLHttpRequest();
+	    var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET",xmlFile,false);
-        xmlhttp.send(null);
-        if(xmlhttp.readyState == 4){
-            xmlDoc = xmlhttp.responseXML.documentElement;
+        try{
+        	xmlhttp.send(null);
+        }catch (ex){
+        	return 0;
         }
-    	return xmlDoc;
+        if(xmlhttp.readyState == 4){
+        	if((xmlhttp.status >= 200 && xmlhttp.status < 300 ) || xmlhttp.status == 304 ){
+	            xmlDoc = xmlhttp.responseXML.documentElement;
+	    		return xmlDoc;
+        	}else{
+        		alert("网络有问题!");
+        		return 1;
+        	}
+        }
     }
 
-
-	xmlChar.addEventListener('click',function(e){
-		var xArray =[] , yArray = [], timeArray = [] , lockArray = [];
-		if(!(document.getElementById("divBubble"))){
-			document.body.appendChild(divBubble);
-			divBubble.innerHTML = tmplate;
-		}else{
-			return ;
-		} 
-		var divCancel = document.getElementById("cancel");
-		var divYes = document.getElementById("yes");
-		divCancel.addEventListener('click',function(e){
-			document.body.removeChild(divBubble);
-		},false);
-
-		divYes.addEventListener("click",function(e){
-			var input = document.getElementById("input");
-			if(input.value){
-				var chars = input.value.split("");
-				if(chars.length == 1){
-					var path = "data\\"+chars[0]+".xml";
-					var docXML = loadXML(path);
-					var strokes = docXML.getElementsByTagName("Stroke");
-					var lock = false;
-					for(var i = 0;i < strokes.length;i++){
-						var startMillisecond = strokes[i].getAttribute("startMillisecond").split("");
-						while(startMillisecond.length < 3){
-							startMillisecond.unshift(0);
-						}
-						var timeMillisecond = startMillisecond.join("");
-						var startTime = +(strokes[i].getAttribute("startSecond") + timeMillisecond);
-						for(var j = 0;j < strokes[i].childNodes.length;j++){
-							if(j == 0){
-								lock = false;
-							}else{
-								lock = true;
-							}
-							var duration = +strokes[i].childNodes[j].getAttribute("deltaTime");
-							startTime += duration;
-							xArray.push(+strokes[i].childNodes[j].getAttribute("x"));
-							yArray.push(+strokes[i].childNodes[j].getAttribute("y"));
-							timeArray.push(startTime); 
-							lockArray.push(lock);
-						}
-					}
-					changeXY(xArray,yArray,timeArray,lockArray);
-					///////////////////////////////
-					W.logData();
-					W.clearScreen();
-					W.drawPointAll(W.$);
-					// Math.max.apply(Math,a);
-					
-					document.body.removeChild(divBubble);
-
-
-////////////////////////////////////////////
-//这里面在整整
-/////////////////////////////////////////////
-
-
-
-
-
-
-
-
-				}else{
-					alert("请输入一个汉字!");
-					input.value = "";
-				}
-			}else{
-				return ;
-			}
-		},false);
-
+	xmlChar.addEventListener("click",function(){
+		var char = prompt("请输入一个汉字","张");
+		if(!char.length || char.length > 1){alert("输入有误!"); return arguments.callee();}
+		var path = "data\\"+char+".xml";
+		var docXML = loadXML(path);
+		if(!docXML) {alert("输入有误!");return  arguments.callee();}
+		drawPoint (docXML);
+		W.clearScreen();
+		W.drawPointAll();
 	},false);
 
-
-	function createElement (el,attr){
-		var element = document.createElement(el);
-		switch(el){
-			case "div" :
-				for(var key in attr){
-					element.style[key] = attr[key];
-				}
-			break;
-		}
-		return element;
-	}//createElement
 
 	function changeXY(X,Y,T,L){
 		var maxX = Math.max.apply(Math,X);
@@ -185,4 +109,32 @@
 		}
 	}
 	
+	function drawPoint (docXML){
+		var xArray =[] , yArray = [], timeArray = [] , lockArray = [];
+		var strokes = docXML.getElementsByTagName("Stroke");
+		var lock = false;
+		for(var i = 0;i < strokes.length;i++){
+			var startMillisecond = strokes[i].getAttribute("startMillisecond").split("");
+			while(startMillisecond.length < 3){
+				startMillisecond.unshift(0);
+			}
+			var timeMillisecond = startMillisecond.join("");
+			var startTime = +(strokes[i].getAttribute("startSecond") + timeMillisecond);
+			for(var j = 0 , length = strokes[i].childNodes.length ;j < length;j++){
+				if(j == 0){
+					lock = false;
+				}else{
+					lock = true;
+				}
+				var duration = +strokes[i].childNodes[j].getAttribute("deltaTime");
+				startTime += duration;
+				xArray.push(+strokes[i].childNodes[j].getAttribute("x"));
+				yArray.push(+strokes[i].childNodes[j].getAttribute("y"));
+				timeArray.push(startTime); 
+				lockArray.push(lock);
+			}
+		}
+		changeXY(xArray,yArray,timeArray,lockArray);
+	}
+
 })();

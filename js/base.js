@@ -108,11 +108,11 @@ var W = function(){
     $.x=[];
     $.y=[];
     $.time=[];
+    $.locks=[];
+    $.count=0;
     $.speed=[];
     $.pressure=[];
-    $.count=0;
     $.distance=[];
-    $.locks=[];
     ctx.clearRect(0,0,canvas.width,canvas.height);
     qt(ctx);
   }
@@ -172,16 +172,16 @@ var W = function(){
     }
   }
 
-  function drawPointAll(d){
+  function drawPointAll(){
     // d是$对象，r是数组索引
-    for(var r = 0;r < d.count;r++){
-      if(d.locks[r]){
-        var sampleNumber = parseInt(d.distance[r] / 0.5);
+    for(var r = 0;r < $.count;r++){
+      if($.locks[r]){
+        var sampleNumber = parseInt($.distance[r] / 0.5);
         for(var u = 0;u < sampleNumber;u++){
           var t = u / (sampleNumber - 1);
-          var x = (1.0 - t) * d.x[r - 1] + t * d.x[r];
-          var y = (1.0 - t) * d.y[r - 1] + t * d.y[r];
-          var w = (1.0 - t) * d.pressure[r - 1] * d.width + t * d.pressure[r] * d.width;
+          var x = (1.0 - t) * $.x[r - 1] + t * $.x[r];
+          var y = (1.0 - t) * $.y[r - 1] + t * $.y[r];
+          var w = (1.0 - t) * $.pressure[r - 1] * $.width + t * $.pressure[r] * $.width;
           ctx.drawImage(image,x - w,y - w,w * 2,w * 2);
         }
       }
@@ -189,10 +189,14 @@ var W = function(){
   }
 
   function nextChar(){
-    if($.count == 0){return alert("请写汉字!");}
+    if($.count == 0){
+      alert("请写汉字!");
+      return ;
+    }
+    charDatas[charCount - 1] = null;
     charDatas[charCount - 1] = cloneCharData($);
     clearPrint();
-    if(charCount < currentChar){
+    if(charDatas[charCount]){
       $ = cloneCharData(charDatas[charCount]);
       drawPointAll($);
     }
@@ -201,13 +205,15 @@ var W = function(){
 
   function preChar(){
     if(charCount <= 1){
-      return alert("已经是第一个字了!");
+      alert("已经是第一个字了!");
+      return ;
     }
-    // if($.count != 0){
-    //   charDatas[charCount - 1] = cloneCharData($);
-    // }
+    if($.count != 0){
+      charDatas[charCount - 1] = null;
+      charDatas[charCount - 1] = cloneCharData($);
+    }
     setCountChar(-1);
-    charDatas[charCount] = cloneCharData($);
+    // charDatas[charCount] = cloneCharData($);
     clearPrint();
     $ = cloneCharData(charDatas[charCount-1]);
     drawPointAll($);
@@ -227,7 +233,7 @@ var W = function(){
   return {
     canvas : canvas,
     ctx : ctx,
-    $ : $,
+    // $ : $,我这里犯下了严重的错误，这里赋值的是以前$值，如果$变更，我在外层引用的还是以前$的值，所以有些汉字写不出来是由原因的
     pushAll : pushAll,
     clearPrint : clearPrint,
     cloneCharData : cloneCharData,
