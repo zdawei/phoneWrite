@@ -208,6 +208,11 @@ var W = function(){
       alert("已经是第一个字了!");
       return ;
     }
+    if($.count == 0 && charCount <= currentChar){
+      //防止中间汉字清空后点击上一个汉字时，数据会回滚到以前版本
+      alert("请写汉字!");
+      return ;
+    }
     if($.count != 0){
       charDatas[charCount - 1] = null;
       charDatas[charCount - 1] = cloneCharData($);
@@ -230,6 +235,28 @@ var W = function(){
     console.log(charCount,currentChar);
   }
 
+  function getData(str){
+    //这里就可以实时的调用$等变量啦
+    switch (str){
+      case "charDatas" : return charDatas ;
+      case "$" : return $ ;
+      default : throw("argument 1 of getData is error!");
+    }
+  }
+
+  function setArg(name,value){
+    //这个是通过滑动条设置参数的
+    $[name] = value;
+    var original = cloneCharData($);
+    clearPrint();
+    for(var i = 0 ; i < original.count ; i++){
+      pushAll(original.x[i],original.y[i],original.time[i],original.locks[i]);
+      drawPoint();
+    }
+    original = null;
+
+  }
+
   return {
     canvas : canvas,
     ctx : ctx,
@@ -244,6 +271,8 @@ var W = function(){
     preChar : preChar,
     reWrite : reWrite,//有问题
     clearScreen : clearScreen,
+    getData : getData,
+    setArg : setArg,
     logData : logData
 
   };//return

@@ -185,8 +185,7 @@ btnSave.addEventListener("click",function(){
 	//ctx.clearRect(0,0,canvas.width,canvas.height);
 	//drawPointAll(charData);
 	//var image=canvas.toDataURL("image/png");
-	qt(ctx);
-	if(charDatas.length){
+	if(W.getchars()){
 		//dataURL = image.replace("image/png", "image/octet-stream");
 		//document.location.href = dataURL;
 		var dataChar=JSON.stringify(charDatas);
