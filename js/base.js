@@ -62,6 +62,10 @@ var W = function(){
   window.addEventListener("load",screencanvas,true);
   window.addEventListener("resize",screencanvas,true);
 
+  setTimeout(function(){
+    screencanvas();
+  },500);//cordova的莫名bug，不出米字格，无语死了
+
   var parameter = function(){
   //剩余参数的计算函数
     var gaussian = function(v, gauss) {

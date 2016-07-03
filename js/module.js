@@ -86,15 +86,32 @@
         }
     }
 
+    var loadJsonp = function(file){
+    	// 跨域访问JSONP
+		var script = document.createElement("script");
+		script.src = file;
+		document.body.appendChild(script);
+    }	
+
 	xmlChar.addEventListener("click",function(){
 		var char = prompt("请输入一个汉字","张");
 		if(!char.length || char.length > 1){alert("输入有误!"); return arguments.callee();}
-		var path = "data\\"+char+".xml";
-		var docXML = loadXML(path);
-		if(!docXML) {alert("输入有误!");return  arguments.callee();}
-		drawPoint (docXML);
-		W.clearScreen();
-		W.drawPointAll();
+		// var path = "datajs\/"+char+".js";
+		var path = "http://202.112.195.243/canvas/phoneWrite/datajs/"+char+".js";
+		// var docXML = loadXML(path);
+		loadJsonp(path);
+		setTimeout(function(){
+			if("undefined" == typeof data) {alert("输入有误!");return ;}
+			changeXY(data,{
+			charBoxWidth : W.canvas.width ,
+			charRatio : 0.85 ,
+			aspectRatio : 4 / 3 ,
+			startPosition : {x : 0 , y : 0}
+			});
+			// drawPoint (docXML);
+			W.clearScreen();
+			W.drawPointAll();
+		},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
 	},false);
 
 	function changeXY(strokeArray, opts) {
@@ -177,10 +194,12 @@
 				strokesArray[i][j].l = lock ;
 			}
 		}
+
+
 		changeXY(strokesArray,{
 			charBoxWidth : W.canvas.width ,
 			charRatio : 0.85 ,
-			aspectRatio : 3 / 3 ,
+			aspectRatio : 4 / 3 ,
 			startPosition : {x : 0 , y : 0}
 		});
 
@@ -191,7 +210,7 @@
 		"<ul style = \"padding : 5% 10% \">"+
 			"<li><p>gaoss<input name = \"gaoss\"  type = \"range\" max = \"2.0\"  min = \"1.0\"  step = \"0.1\" value = \"1.3\"  /></p></li>"+
 			"<li><p>minPress<input name = \"minPress\"  type = \"range\" max = \"0.1\"  min = \"0.01\"  step = \"0.01\"  value = \"0.05\" /></p></li>"+
-			"<li><p>maxPress<input name = \"maxPress\"  type = \"range\" max = \"0.5\"  min = \"0.1\"  step = \"0.01\"  value = \"0.2\" /></p></li>"+
+			//"<li><p>maxPress<input name = \"maxPress\"  type = \"range\" max = \"0.5\"  min = \"0.1\"  step = \"0.01\"  value = \"0.2\" /></p></li>"+
 			"<li><p>width<input name = \"width\"  type = \"range\" max = \"100\"  min = \"10\"   step = \"1\"  value = \"50\"  /></p></li>"+
 		"</ul>"+
 	"</form>";
