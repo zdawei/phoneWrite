@@ -1,21 +1,16 @@
 ﻿<!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+		<meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
 		<title>writing</title>
 		<link rel="shortct icon" type="image/ico" href="img/favicon.ico">
 		<link rel="stylesheet" href="css/main.css" type="text/css">
 	</head>
-	<body>
-		<button  id="xmlcharacter" class =  "total" type="button"  title="汉字库">汉字库</button>
-		<button  id="handwriting" class =  "total" type="button"  title="调整参数">参数调整</button>
-		<button  id="prechars" type="button"  title="上一个汉字">上一个</button>
-		<button  id="btnClear" type="button"  title="清除画布">清除</button>
-		<button  id="nextchars" type="button"  title="下一个汉字">下一个</button>
-		<button  id="setChar" type="button" title="调整汉字">调整</button>
-		<div id="tip"><p>当前没写汉字!</p></div>
-		<script src="js/base.js"></script>
-		<script src="js/module.js"></script>
+	<body>		
+		<div id = "main"></div>
+		<script src="js/lib/pre.js"></script>
+		<script src="js/lib/base.js"></script>
+		<script src="js/pl/writemodule.js"></script>
+		<script src="js/pl/eventbind.js"></script>
 	</body>
 </html>

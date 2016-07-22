@@ -1,11 +1,9 @@
-var W = function(){
+_.W = function(){
 
   document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
   var image = document.createElement("img");
   image.src = "img/model.png";//笔刷模型
-  var canvas = document.createElement("canvas");
-  canvas.id = "writing";
-  document.body.insertBefore(canvas,document.body.lastChild);
+  var canvas = document.getElementById("writing");
   var ctx = canvas.getContext("2d");
   var countChar = document.getElementById("tip").firstChild.firstChild;//提示的文本
   var currentChar = 0,totalchar = 15;//currentChar 当前的汉子个数,totalchar总汉子个数
@@ -134,6 +132,7 @@ var W = function(){
   }
 
   function clearScreen(){
+    //只清除画板，不清楚数据
     ctx.clearRect(0,0,canvas.width,canvas.height);
     qt(ctx);
   }
@@ -228,11 +227,56 @@ var W = function(){
     drawPointAll($);
   }
 
-  function reWrite(){
-    charDatas[charCount - 1] = cloneCharData($);
-    clearPrint();
-    $ = cloneCharData(charDatas[charCount - 1]);
-    drawPointAll($);
+  function animation(){
+    var reWrite = function(count){
+      //根据animation动画播放汉字而写的函数
+      var sampleNumber = parseInt($.distance[count] / 0.5);
+      for ( var u = 0 ; u < sampleNumber ; u++ ){
+        var t = u / (sampleNumber - 1);
+        var x = ( 1.0 - t ) * $.x[count - 1] + t * $.x[count];
+        var y = ( 1.0 - t ) * $.y[count - 1] + t * $.y[count];
+        var w = ( 1.0 - t ) * $.pressure[count - 1] * $.width + t * $.pressure[count] * $.width;
+        ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+      }
+    }
+    clearScreen();
+    var count = 0;
+    // var handle = setInterval(function(){
+    //   if(count++ >= $.count){
+    //     clearInterval(handle);
+    //   }
+    //   reWrite(count);
+    // },17);
+    var time = $.time[count + 1] - $.time[count];
+    var animfunc = function(){
+      if(count++ >= $.count){
+        clearTimeout(handle);
+      }else{
+        reWrite(count);
+        time = $.time[count + 1] - $.time[count];
+        setTimeout(animfunc,time);   
+      }
+    }
+    var handle = setTimeout(animfunc,time);
+  }
+
+  function framework(){
+    //顶导的笔画框架
+    var draw = function(){
+      // d是$对象，r是数组索引
+      ctx.beginPath();
+      for(var r = 0 ; r < $.count ; r++){
+        if($.locks[r]){
+          ctx.moveTo($.x[r - 1],$.y[r - 1]);
+          ctx.lineTo($.x[r],$.y[r]);
+          ctx.moveTo($.x[r] + 5,$.y[r] + 5);
+          ctx.arc($.x[r],$.y[r],5,0,2 * Math.PI,false);
+        }
+      }
+      ctx.stroke();
+    }
+    clearScreen();
+    draw();
   }
 
   function logData(){
@@ -261,24 +305,39 @@ var W = function(){
 
   }
 
+  var setChar = function(){
+    var data = getData("charDatas");
+    if(data.length){
+      var dataChar = JSON.stringify(data);
+      localStorage.removeItem("dataChars");
+      localStorage.setItem("dataChars",dataChar);
+      var w = window.open("second.html","_self");
+    }else{
+      alert("没有汉字");
+    }
+  };
+
   return {
     canvas : canvas,
     ctx : ctx,
     // $ : $,我这里犯下了严重的错误，这里赋值的是以前$值，如果$变更，我在外层引用的还是以前$的值，所以有些汉字写不出来是由原因的
     pushAll : pushAll,
     clearPrint : clearPrint,
+    clearScreen : clearScreen,
     cloneCharData : cloneCharData,
     setCountChar : setCountChar,
     drawPoint : drawPoint,
     drawPointAll : drawPointAll,
     nextchar : nextChar,
     preChar : preChar,
-    reWrite : reWrite,//有问题
     clearScreen : clearScreen,
     getData : getData,
     setArg : setArg,
-    logData : logData
-
+    logData : logData ,
+    setChar : setChar,
+    animation : animation,
+    framework : framework
   };//return
+  
 }();
 
