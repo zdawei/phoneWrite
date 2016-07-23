@@ -1,4 +1,5 @@
-_.W = function(){
+_.pre = function(){
+  //毛笔字的库，比较长，所以单独拿出来
 
   document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
   var image = document.createElement("img");
@@ -228,6 +229,7 @@ _.W = function(){
   }
 
   function animation(){
+    //动画写字函数
     var reWrite = function(count){
       //根据animation动画播放汉字而写的函数
       var sampleNumber = parseInt($.distance[count] / 0.5);
@@ -317,27 +319,61 @@ _.W = function(){
     }
   };
 
+  var writeOpen = function(){
+    //canvas上书写的事件绑定函数
+    var touch = ("createTouch" in document);
+    var StartEvent = touch ? "touchstart" : "mousedown";
+    var MoveEvent = touch ? "touchmove" : "mousemove";
+    var EndEvent = touch ? "touchend" : "mouseup";
+    var lock = false;
+    canvas['on' + StartEvent] = function(e){
+      var t = touch ? e.touches[0] : e;
+      var x = t.pageX - t.target.offsetLeft;
+      var y = t.pageY - t.target.offsetTop;
+      var time = new Date().getTime();
+      pushAll(x,y,time,false);
+      lock = true;
+    }
+    canvas['on' + MoveEvent] = function(e){
+      if(lock){
+        var t = touch ? e.touches[0] : e;
+        var x = t.pageX - t.target.offsetLeft;
+        var y = t.pageY - t.target.offsetTop;
+        var time = new Date().getTime();
+        pushAll(x,y,time,true);
+        drawPoint();
+      }
+    }
+    canvas.onmouseout = function(e){
+      lock = false;
+    }
+    canvas['on' + EndEvent] = function(e){
+      lock = false;
+    }
+  }
+
   return {
-    canvas : canvas,
-    ctx : ctx,
+    canvas : canvas
+    ,ctx : ctx
     // $ : $,我这里犯下了严重的错误，这里赋值的是以前$值，如果$变更，我在外层引用的还是以前$的值，所以有些汉字写不出来是由原因的
-    pushAll : pushAll,
-    clearPrint : clearPrint,
-    clearScreen : clearScreen,
-    cloneCharData : cloneCharData,
-    setCountChar : setCountChar,
-    drawPoint : drawPoint,
-    drawPointAll : drawPointAll,
-    nextchar : nextChar,
-    preChar : preChar,
-    clearScreen : clearScreen,
-    getData : getData,
-    setArg : setArg,
-    logData : logData ,
-    setChar : setChar,
-    animation : animation,
-    framework : framework
+    ,pushAll : pushAll
+    ,clearPrint : clearPrint
+    ,clearScreen : clearScreen
+    ,cloneCharData : cloneCharData
+    ,setCountChar : setCountChar
+    ,drawPoint : drawPoint
+    ,drawPointAll : drawPointAll
+    ,nextchar : nextChar
+    ,preChar : preChar
+    ,clearScreen : clearScreen
+    ,getData : getData
+    ,setArg : setArg
+    ,logData : logData 
+    ,setChar : setChar
+    ,animation : animation
+    ,framework : framework
+    ,writeOpen : writeOpen
   };//return
-  
-}();
+
+};
 
