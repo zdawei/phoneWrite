@@ -1,8 +1,7 @@
-(function() {
-	var W = _.W;
-	var strokesArray = [];//将来可能添加设置参数，所以把这个提出来了
-	var script = document.createElement("script");
-	document.body.appendChild(script);
+;(function() {
+	// 绑定按钮事件，加启动所有脚本
+
+	var W , script ;
 
 	var loadXML = function (xmlFile) {
 		// 加载xml文档
@@ -167,20 +166,30 @@
 		},false);
 	};
 
+	var bind = function() {	
+		W = _.W;
+		var strokesArray = [];//将来可能添加设置参数，所以把这个提出来了
+		script = document.createElement("script");//用于jsonp
+		document.body.appendChild(script);
+		document.body.addEventListener("click",function(evt){
+			//添加事件代理
+			switch(evt.target.id){
+				case "xmlcharacter" : xmlcharacter();break;
+				case "handwriting" : handwriting();break;
+				case "animation" : W.animation();break;
+				case "framework" : W.framework();break;
+				case "prechars" : W.preChar();break;
+				case "btnClear" : W.clearPrint();break;
+				case "nextchars" : W.nextchar();break;
+				case "setChar" : W.setChar();break;
+			}
+		},false);
+	};
 
+	var init = function(){
+		_.init();
+		bind();
+	};
 
-
-	document.body.addEventListener("click",function(evt){
-		//添加事件代理
-		switch(evt.target.id){
-			case "xmlcharacter" : xmlcharacter();break;
-			case "handwriting" : handwriting();break;
-			case "animation" : W.animation();break;
-			case "framework" : W.framework();break;
-			case "prechars" : W.preChar();break;
-			case "btnClear" : W.clearPrint();break;
-			case "nextchars" : W.nextchar();break;
-			case "setChar" : W.setChar();break;
-		}
-	},false);
+	init();
 })();

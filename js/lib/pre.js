@@ -1,3 +1,12 @@
+/**
+* author : dawei
+* fileoverview : 这个文件是毛笔字库，主要用于在canvas上实时书写出毛笔字的效果，
+* 毛笔字的笔触模型参考的互联网上的图样，包含pre和base，其中base作为重点另成一文件。
+* 启动库的方法是_.init();此后在_.W中使用
+* history : 2016年7月22日 重构了整个框架。
+* 这个库涉及的方面过多(比如要插入html，一些按钮的事件处理函数)，所以通用性不强。
+*/
+
 var _ = {
 	template : {
 		html : 
@@ -10,8 +19,8 @@ var _ = {
 		'<button  id = "nextchars" type = "button"  title = "下一个汉字">下一个</button>'+
 		'<button  id = "setChar" type = "button" title = "调整汉字">调整</button>'+
 		'<div id = "tip"><p>当前没写汉字!</p></div>'+
-		'<canvas id="writing" ></canvas>',
-		parameter : 
+		'<canvas id="writing" ></canvas>'
+		,parameter : 
 		'<form>'+
 			'<ul style = \"padding : 5% 10% \">'+
 				'<li><p>gaoss<input name = \"gaoss\"  type = \"range\" max = \"2.0\"  min = \"1.0\"  step = \"0.1\" value = \"1.3\"  /></p></li>'+
@@ -21,6 +30,11 @@ var _ = {
 			'</ul>'+
 		'</form>'
 	}
+
+	,init : function(){
+		document.getElementById("main").innerHTML = _.template.html;
+		_.W = _.pre();	
+		_.W.writeOpen();	
+	}
 };
 
-document.getElementById("main").innerHTML = _.template.html;
