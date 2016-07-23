@@ -26,9 +26,10 @@
 
 	var loadJsonp = function(file){
 		// 跨域访问JSONP
-		document.body.removeChild(script);
+		script = document.body.removeChild(script);
+		script = null;
+		script = document.createElement("script");//用于jsonp
 		script.src = file;
-		if("undefined" != typeof data){ data = [];}
 		document.body.appendChild(script);
 	};
 
@@ -40,18 +41,20 @@
 		var path = "http://202.112.195.243/canvas/phoneWrite/datajs/"+char+".js";
 		// var docXML = loadXML(path);
 		loadJsonp(path);
-		setTimeout(function(){
-			if("undefined" == typeof data) {alert("输入有误!");return ;}
-			changeXY(data,{
-			charBoxWidth : W.canvas.width ,
-			charRatio : 0.85 ,
-			aspectRatio : 4 / 3 ,
-			startPosition : {x : 0 , y : 0}
-			},500);
-			// drawPoint (docXML);
-			W.clearScreen();
-			W.drawPointAll();
-		},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
+		script.onload = function(){
+			setTimeout(function(){
+				if("undefined" == typeof data) {alert("输入有误!");return ;}
+				changeXY(data,{
+				charBoxWidth : W.canvas.width ,
+				charRatio : 0.85 ,
+				aspectRatio : 4 / 3 ,
+				startPosition : {x : 0 , y : 0}
+				},500);
+				// drawPoint (docXML);
+				W.clearScreen();
+				W.drawPointAll();
+			},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
+		}
 	};
 
 	var changeXY = function(strokeArray, opts) {

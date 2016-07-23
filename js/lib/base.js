@@ -269,10 +269,11 @@ _.pre = function(){
       ctx.beginPath();
       for(var r = 0 ; r < $.count ; r++){
         if($.locks[r]){
+          var distant = Math.max(parseInt($.pressure[r] * 60) , 5) ;
           ctx.moveTo($.x[r - 1],$.y[r - 1]);
           ctx.lineTo($.x[r],$.y[r]);
-          ctx.moveTo($.x[r] + 5,$.y[r] + 5);
-          ctx.arc($.x[r],$.y[r],5,0,2 * Math.PI,false);
+          ctx.moveTo($.x[r] + distant - 2,$.y[r] + distant - 2);
+          ctx.arc($.x[r],$.y[r],distant,0,2 * Math.PI,false);
         }
       }
       ctx.stroke();
@@ -283,6 +284,7 @@ _.pre = function(){
 
   function logData(){
     console.log(charCount,currentChar);
+    console.log($);
   }
 
   function getData(str){
@@ -365,7 +367,6 @@ _.pre = function(){
     ,drawPointAll : drawPointAll
     ,nextchar : nextChar
     ,preChar : preChar
-    ,clearScreen : clearScreen
     ,getData : getData
     ,setArg : setArg
     ,logData : logData 
