@@ -1,10 +1,11 @@
-_.pre = function(){
-  //毛笔字的库，比较长，所以单独拿出来
+var W = function(){
 
   document.body.addEventListener('touchmove', function (event) {event.preventDefault();}, false);//固定页面
   var image = document.createElement("img");
   image.src = "img/model.png";//笔刷模型
-  var canvas = document.getElementById("writing");
+  var canvas = document.createElement("canvas");
+  canvas.id = "writing";
+  document.body.insertBefore(canvas,document.body.lastChild);
   var ctx = canvas.getContext("2d");
   var countChar = document.getElementById("tip").firstChild.firstChild;//提示的文本
   var currentChar = 0,totalchar = 15;//currentChar 当前的汉子个数,totalchar总汉子个数
@@ -60,10 +61,6 @@ _.pre = function(){
   }
   window.addEventListener("load",screencanvas,true);
   window.addEventListener("resize",screencanvas,true);
-
-  setTimeout(function(){
-    screencanvas();
-  },500);//cordova的莫名bug，不出米字格，无语死了
 
   var parameter = function(){
   //剩余参数的计算函数
@@ -133,7 +130,6 @@ _.pre = function(){
   }
 
   function clearScreen(){
-    //只清除画板，不清楚数据
     ctx.clearRect(0,0,canvas.width,canvas.height);
     qt(ctx);
   }
@@ -228,73 +224,15 @@ _.pre = function(){
     drawPointAll($);
   }
 
-  function animation(){
-    //动画写字函数
-    var reWrite = function(count){
-      //根据animation动画播放汉字而写的函数
-      var sampleNumber = parseInt($.distance[count] / 0.5);
-      for ( var u = 0 ; u < sampleNumber ; u++ ){
-        var t = u / (sampleNumber - 1);
-        var x = ( 1.0 - t ) * $.x[count - 1] + t * $.x[count];
-        var y = ( 1.0 - t ) * $.y[count - 1] + t * $.y[count];
-        var w = ( 1.0 - t ) * $.pressure[count - 1] * $.width + t * $.pressure[count] * $.width;
-        ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
-      }
-    }
-    clearScreen();
-    var count = 0;
-    // var handle = setInterval(function(){
-    //   if(count++ >= $.count){
-    //     clearInterval(handle);
-    //   }
-    //   reWrite(count);
-    // },17);
-    var time = $.time[count + 1] - $.time[count];
-    var animfunc = function(){
-      if(count++ >= $.count){
-        clearTimeout(handle);
-      }else{
-        reWrite(count);
-        time = $.time[count + 1] - $.time[count];
-        setTimeout(animfunc,time);   
-      }
-    }
-    var handle = setTimeout(animfunc,time);
-  }
-
-  function framework(){
-    //顶导的笔画框架
-    var draw = function(){
-      // d是$对象，r是数组索引
-      ctx.beginPath();
-      for(var r = 0 ; r < $.count ; r++){
-        if($.locks[r]){
-<<<<<<< HEAD
-          ctx.moveTo($.x[r - 1],$.y[r - 1]);
-          ctx.lineTo($.x[r],$.y[r]);
-          ctx.moveTo($.x[r] + 5,$.y[r] + 5);
-          ctx.arc($.x[r],$.y[r],5,0,2 * Math.PI,false);
-=======
-          var distant = Math.max(parseInt($.pressure[r] * 60) , 5) ;
-          ctx.moveTo($.x[r - 1],$.y[r - 1]);
-          ctx.lineTo($.x[r],$.y[r]);
-          ctx.moveTo($.x[r] + distant - 2,$.y[r] + distant - 2);
-          ctx.arc($.x[r],$.y[r],distant,0,2 * Math.PI,false);
->>>>>>> gh-pages
-        }
-      }
-      ctx.stroke();
-    }
-    clearScreen();
-    draw();
+  function reWrite(){
+    charDatas[charCount - 1] = cloneCharData($);
+    clearPrint();
+    $ = cloneCharData(charDatas[charCount - 1]);
+    drawPointAll($);
   }
 
   function logData(){
     console.log(charCount,currentChar);
-<<<<<<< HEAD
-=======
-    console.log($);
->>>>>>> gh-pages
   }
 
   function getData(str){
@@ -319,76 +257,24 @@ _.pre = function(){
 
   }
 
-  var setChar = function(){
-    var data = getData("charDatas");
-    if(data.length){
-      var dataChar = JSON.stringify(data);
-      localStorage.removeItem("dataChars");
-      localStorage.setItem("dataChars",dataChar);
-      var w = window.open("second.html","_self");
-    }else{
-      alert("没有汉字");
-    }
-  };
-
-  var writeOpen = function(){
-    //canvas上书写的事件绑定函数
-    var touch = ("createTouch" in document);
-    var StartEvent = touch ? "touchstart" : "mousedown";
-    var MoveEvent = touch ? "touchmove" : "mousemove";
-    var EndEvent = touch ? "touchend" : "mouseup";
-    var lock = false;
-    canvas['on' + StartEvent] = function(e){
-      var t = touch ? e.touches[0] : e;
-      var x = t.pageX - t.target.offsetLeft;
-      var y = t.pageY - t.target.offsetTop;
-      var time = new Date().getTime();
-      pushAll(x,y,time,false);
-      lock = true;
-    }
-    canvas['on' + MoveEvent] = function(e){
-      if(lock){
-        var t = touch ? e.touches[0] : e;
-        var x = t.pageX - t.target.offsetLeft;
-        var y = t.pageY - t.target.offsetTop;
-        var time = new Date().getTime();
-        pushAll(x,y,time,true);
-        drawPoint();
-      }
-    }
-    canvas.onmouseout = function(e){
-      lock = false;
-    }
-    canvas['on' + EndEvent] = function(e){
-      lock = false;
-    }
-  }
-
   return {
-    canvas : canvas
-    ,ctx : ctx
+    canvas : canvas,
+    ctx : ctx,
     // $ : $,我这里犯下了严重的错误，这里赋值的是以前$值，如果$变更，我在外层引用的还是以前$的值，所以有些汉字写不出来是由原因的
-    ,pushAll : pushAll
-    ,clearPrint : clearPrint
-    ,clearScreen : clearScreen
-    ,cloneCharData : cloneCharData
-    ,setCountChar : setCountChar
-    ,drawPoint : drawPoint
-    ,drawPointAll : drawPointAll
-    ,nextchar : nextChar
-    ,preChar : preChar
-<<<<<<< HEAD
-    ,clearScreen : clearScreen
-=======
->>>>>>> gh-pages
-    ,getData : getData
-    ,setArg : setArg
-    ,logData : logData 
-    ,setChar : setChar
-    ,animation : animation
-    ,framework : framework
-    ,writeOpen : writeOpen
-  };//return
+    pushAll : pushAll,
+    clearPrint : clearPrint,
+    cloneCharData : cloneCharData,
+    setCountChar : setCountChar,
+    drawPoint : drawPoint,
+    drawPointAll : drawPointAll,
+    nextchar : nextChar,
+    preChar : preChar,
+    reWrite : reWrite,//有问题
+    clearScreen : clearScreen,
+    getData : getData,
+    setArg : setArg,
+    logData : logData
 
-};
+  };//return
+}();
 
