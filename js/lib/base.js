@@ -269,18 +269,11 @@ _.pre = function(){
       ctx.beginPath();
       for(var r = 0 ; r < $.count ; r++){
         if($.locks[r]){
-<<<<<<< HEAD
-          ctx.moveTo($.x[r - 1],$.y[r - 1]);
-          ctx.lineTo($.x[r],$.y[r]);
-          ctx.moveTo($.x[r] + 5,$.y[r] + 5);
-          ctx.arc($.x[r],$.y[r],5,0,2 * Math.PI,false);
-=======
           var distant = Math.max(parseInt($.pressure[r] * 60) , 5) ;
           ctx.moveTo($.x[r - 1],$.y[r - 1]);
           ctx.lineTo($.x[r],$.y[r]);
           ctx.moveTo($.x[r] + distant - 2,$.y[r] + distant - 2);
           ctx.arc($.x[r],$.y[r],distant,0,2 * Math.PI,false);
->>>>>>> gh-pages
         }
       }
       ctx.stroke();
@@ -291,10 +284,7 @@ _.pre = function(){
 
   function logData(){
     console.log(charCount,currentChar);
-<<<<<<< HEAD
-=======
     console.log($);
->>>>>>> gh-pages
   }
 
   function getData(str){
@@ -377,10 +367,6 @@ _.pre = function(){
     ,drawPointAll : drawPointAll
     ,nextchar : nextChar
     ,preChar : preChar
-<<<<<<< HEAD
-    ,clearScreen : clearScreen
-=======
->>>>>>> gh-pages
     ,getData : getData
     ,setArg : setArg
     ,logData : logData 
