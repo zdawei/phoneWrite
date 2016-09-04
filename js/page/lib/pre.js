@@ -30,6 +30,6 @@ var _sec = {
 	,init : function() {
 		var main = document.getElementById('main');
 		main.innerHTML = _sec.template.html;
-		_sec.pre();
+		_sec.Z = _sec.pre();
 	}
 }

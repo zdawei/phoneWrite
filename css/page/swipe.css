@@ -1,0 +1,21 @@
+.swipe {  
+    overflow: hidden;  
+    visibility: hidden;  
+    position: relative;  
+}  
+.swipe-wrap {  
+    overflow: hidden;  
+    position: relative;  
+}  
+.swipe-wrap > figure {  
+    float: left;  
+    width: 100%;  
+    position: relative;  
+}  
+#slider {  
+    max-width: 650px;/* 设置最大的宽度 */  
+    margin: 0px auto; /* 居中对齐 */  
+}  
+figure {  
+    margin: 0;/* 对齐，四周宽度都为0，在轮播的时候，以整张图片进行移动 */  
+}  
