@@ -9,6 +9,7 @@ _.pre = function(){
   var countChar = document.getElementById("tip").firstChild.firstChild;//提示的文本
   var currentChar = 0,totalchar = 15;//currentChar 当前的汉子个数,totalchar总汉子个数
   var charDatas = [],charCount = 1;//charDatas 写汉字的保存数组,charCount 汉字保存数组的当前下标值
+  var drawCount = 0;//新加了draw函数的计数暂存
   var $ = {
   	x : [],//x坐标
   	y : [],//y坐标
@@ -18,11 +19,16 @@ _.pre = function(){
   	speed : [],//速度
   	pressure : [],//压力
   	distance : [],//距离
+    a : [],
   	//以下是参数设置
   	gaoss : 1.3,//高斯初始值
   	minPress : 0.05,
   	maxPress : 0.2,
-  	width : 50
+  	width : 50,
+    //增加了draw函数后的参数
+    draw_wmin : 3.0,
+    draw_wmax : 11,
+    draw_sigmoid : 0.3
   };
 
   var qt = function(ctx){
@@ -90,6 +96,23 @@ _.pre = function(){
     $.pressure[$.count - 1] = ($.pressure[$.count - 1] + $.pressure[$.count - 2]) / 2;
   }
 
+  var setAcceleration = function() {
+    var acceleration, v1, v2;
+    var distance = function(x1,y1,x2,y2) {
+      return (Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
+    };
+    if($.count == 1) {
+      acceleration = 0;
+    }else {
+      var distance = distance($.x[$.count - 1], $.y[$.count - 1], $.x[$.count - 2], $.y[$.count - 2]);
+      v1 = $.speed[$.count - 2];
+      v2 = $.speed[$.count - 1];
+      var deltatime = $.time[$.count - 1] - $.time[$.count - 2];
+      acceleration = distance < 3 ? 0 : (v2 - v1) / deltatime;
+    }
+    $.a.push(acceleration);
+  };
+
   function pushAll(x,y,time,lock){
     //只提供x,y,time,lock自动计算所有参数，并全部压入
     $.x.push(x);
@@ -104,6 +127,7 @@ _.pre = function(){
     }else{
       parameter();//速度计算函数，包括计算距离并且加入了距离的值
     }
+    setAcceleration();
   }
 
   function clearPrint(){
@@ -116,6 +140,7 @@ _.pre = function(){
     $.speed=[];
     $.pressure=[];
     $.distance=[];
+    $.a=[];
     ctx.clearRect(0,0,canvas.width,canvas.height);
     qt(ctx);
   }
@@ -130,6 +155,7 @@ _.pre = function(){
     $.count = 0;
     $.distance = [];
     $.locks = [];
+    $.a=[];
   }
 
   function clearScreen(){
@@ -162,19 +188,199 @@ _.pre = function(){
       ++charCount;
       return alert("已经是第一个字了!");
     }
-  }
+  };
 
-  function drawPoint(){
-  //count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
-    var sampleNumber = parseInt($.distance[$.count - 1] / 0.5);
-    for ( var u = 0 ; u < sampleNumber ; u++ ){
-      var t = u / (sampleNumber - 1);
-      var x = ( 1.0 - t ) * $.x[$.count - 2] + t * $.x[$.count - 1];
-      var y = ( 1.0 - t ) * $.y[$.count - 2] + t * $.y[$.count - 1];
-      var w = ( 1.0 - t ) * $.pressure[$.count - 2] * $.width + t * $.pressure[$.count - 1] * $.width;
-      ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+  // function draw() {
+  function drawPoint() {
+    var d1, sampleNumber;
+    var point, prePoint;
+    var color;
+    var w1, wFirst, wSecond;
+    var i;
+    var tempX, tempY, tempW;
+    var c_a = 4;
+    var x1,x2,x3,x4,
+        y1,y2,y3,y4,
+        w1,w2,w3,w4;
+    //三次贝塞尔曲线的控制点
+    var a1,a2,a3,b1,b2,b3;
+    var wmin = $.draw_wmin;
+    var wmax = $.draw_wmax;
+    var sigmoid = $.draw_sigmoid;
+
+    var distance = function(x1,y1,x2,y2) {
+      return (Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
+    };
+
+    if(!$.locks[$.count - 2]) {
+      drawCount = $.count;     
+      return ;
+    }
+
+    if($.count - drawCount > 1) {
+
+      d1 = distance($.x[$.count - 1], $.y[$.count - 1], $.x[$.count - 2], $.y[$.count - 2]);
+      sampleNumber = parseInt(d1 * 50);
+
+      if ($.count - drawCount < 3 ) {return;}
+      //当大于等于三个个点的时候，再绘制。
+      x2 = $.x[$.count - 3];
+      x3 = $.x[$.count - 2];
+      x4 = $.x[$.count - 1];
+    
+      y2 = $.y[$.count - 3];
+      y3 = $.y[$.count - 2];
+      y4 = $.y[$.count - 1];
+        
+      v2 = $.speed[$.count - 3];
+      v3 = $.speed[$.count - 2];
+      v4 = $.speed[$.count - 1];
+
+      var controlAcc2 = Math.pow(Math.E, -c_a * $.a[$.count - 3]);
+      var controlAcc3 = Math.pow(Math.E, -c_a * $.a[$.count - 2]);
+      var controlAcc4 = Math.pow(Math.E, -c_a * $.a[$.count - 1]);
+      controlAcc2 = Math.max(Math.min(controlAcc2, 1.2), 0.8);  
+      controlAcc3 = Math.max(Math.min(controlAcc2, 1.2), 0.8);  
+      controlAcc4 = Math.max(Math.min(controlAcc2, 1.2), 0.8);  
+
+
+      w2 = wmax * 2 / (1 + Math.pow(Math.E, sigmoid * v2)) * controlAcc2;
+      w3 = wmax * 2 / (1 + Math.pow(Math.E, sigmoid * v3)) * controlAcc3;
+      w4 = wmax * 2 / (1 + Math.pow(Math.E, sigmoid * v4)) * controlAcc4;
+
+      var dis23 = Math.sqrt( (x3 - x2) * (x3 - x2) + (y3 - y2) * (y3 - y2));
+      var dis34 = Math.sqrt( (x4 - x3) * (x4 - x3) + (y4 - y3) * (y4 - y3));
+      var dis24 = Math.sqrt( (x4 - x2) * (x4 - x2) + (y4 - y2) * (y4 - y2));
+
+
+      if( $.count - drawCount == 3){       
+        var disAvg = dis23/(3.0 * dis24); 
+        b2 = {
+          x: x3 - disAvg *(x4 - x2),
+          y: y3 - disAvg *(y4 - y2),
+          v: v3 - (v4 - v2) / 6,
+          w: w3 - (w4 - w2) / 6 
+        };
+        a2 = {
+          x: b2.x - (x3 - x2) / 3,
+          y: b2.y - (y3 - y2) / 3,
+          v: b2.v - (v3 - v2) / 3,
+          w: b2.w - (w3 - w2) / 3
+        };
+      } else {
+        x1 = $.x[$.count - 4];
+        y1 = $.y[$.count - 4];
+        v1 = $.speed[$.count - 4];
+        var gaussian = 12;
+        w1 = 11 * Math.pow(Math.E, -v1 * v1 / (2 * gaussian * gaussian)); 
+        var dis13 = Math.sqrt( (x3-x1) * (x3-x1) + (y3 - y1) * (y3 - y1));
+        var dis12 = Math.sqrt( (x2-x1) * (x2-x1) + (y2 - y1) * (y2 - y1));
+        var disAvg = dis23 / (3.0 * dis13); 
+        //每次都绘制第二条线段
+        //Note that the v is acutally an independent dimension
+        // so the cubic Bezier here is one dimensonal. that is why times 1/6
+        var factor = 1 / 6;          
+        a2 = {
+          x : x2 + disAvg * (x3 - x1) ,
+          y : y2 + disAvg * (y3 - y1),
+          w : w2 + (w3 - w1) * factor,
+          v : v2 + (v3 - v1) * factor
+        };
+        disAvg = dis34 / (3.0 * dis24);
+        b2 = {
+          x : x3 - disAvg * (x4 - x2),
+          y : y3 - disAvg * (y4 - y2),
+          w : w3 - (w4 - w2) * factor,
+          v : v3 - (v4 - v2) * factor
+        };
+    //Here comes the tricky part, to make sure the central control segment parallel to the xy2-xy3
+
+        var perpA = ((x3 - x1) * (x3 - x2) + (y3 - y1) * (y3 - y2)) / (dis23 * dis13); //cosine of the angle
+        var perpB = ((x2 - x4) * (x2 - x3) + (y2 - y4) * (y2 - y3)) / (dis23 * dis24);
+        if( perpA > perpB ){
+        
+        //sine value                      
+          perpA = (dis23 / 3) * Math.sqrt(1 - perpA * perpA);
+          perpA = perpA / Math.sqrt(1 - perpB * perpB);
+          b2.x = x3 - perpA * (x4 - x2) / dis24;
+          b2.y = y3 - perpA * (y4 - y2) / dis24;
+        } else {
+        //sine value                      
+          perpB = (dis23 / 3) * Math.sqrt(1 - perpB * perpB);
+          perpB = perpB /  Math.sqrt(1 - perpA * perpA);
+          a2.x = x2 + perpA * (x3 - x1) / dis13;
+          a2.y = y2 + perpA * (y3 - y1) / dis13;
+        }
+      }
+
+      
+      for(var u=0; u < sampleNumber; u++) {
+        var t = u / (sampleNumber - 1);
+        tempX = (1-t)*(1-t)*(1-t)*x2
+              +t*(1-t)*(1-t)*3*a2.x
+              +t*t*(1-t)*3*b2.x
+              +t*t*t*x3;
+        tempY = (1-t)*(1-t)*(1-t)*y2
+              +t*(1-t)*(1-t)*3*a2.y
+              +t*t*(1-t)*3*b2.y
+              +t*t*t*y3;
+        tempW = (1-t)*(1-t)*(1-t)*w2
+              +t*(1-t)*(1-t)*3*a2.w
+                +t*t*(1-t)*3*b2.w
+              +t*t*t*w3;
+        tempW = Math.min(Math.max(tempW, wmin), wmax);
+        ctx.drawImage(image, tempX - tempW, tempY - tempW, 2 * tempW, 2 * tempW);
+      }
+      // if(!$.locks[$.count - 1]) {
+      // //绘制最后一条线段
+      // //如果是最后一个线段，则x5=x4,y5=y4
+      //   var disAvg = dis34 / (3.0 * dis24); 
+            
+      //   a3 = {
+      //     x : x3 + ( x4 - x2) * disAvg,
+      //     y : y3 + ( y4 - y2) * disAvg,
+      //     w : w3 + ( w4 - w3) / 3,
+      //     v : v3 + ( v4 - v3) / 3
+      //   };
+      //   b3 = {
+      //     x : a3.x + (x4 - x3) / 3,
+      //     y : a3.y + (y4 - y3) / 3,
+      //     v : a3.v + (v4 - v3) / 3,
+      //     w : a3.w + (w4 - w3) / 3
+      //   };
+      //   for(var u=0; u < sampleNumber; u++) {
+      //     var t = u / (sampleNumber - 1);
+      //     tempX = (1-t)*(1-t)*(1-t)*x3
+      //             +t*(1-t)*(1-t)*3*a3.x
+      //             +t*t*(1-t)*3*b3.x
+      //             +t*t*t*x4;
+      //     tempY = (1-t)*(1-t)*(1-t)*y3
+      //             +t*(1-t)*(1-t)*3*a3.y
+      //             +t*t*(1-t)*3*b3.y
+      //             +t*t*t*y4;
+      //     tempW = (1-t)*(1-t)*(1-t)*w3
+      //             +t*(1-t)*(1-t)*3*a3.w
+      //             +t*t*(1-t)*3*b3.w
+      //             +t*t*t*w4;
+      //     tempW = Math.min(Math.max(tempW, wmin), wmax);
+      //     ctx.drawImage(image, tempX - tempW, tempY - tempW, 2 * tempW, 2 * tempW);
+      //   }
+      // }       
     }
   }
+
+
+  // function drawPoint(){
+  // //count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
+  //   var sampleNumber = parseInt($.distance[$.count - 1] / 0.5);
+  //   for ( var u = 0 ; u < sampleNumber ; u++ ){
+  //     var t = u / (sampleNumber - 1);
+  //     var x = ( 1.0 - t ) * $.x[$.count - 2] + t * $.x[$.count - 1];
+  //     var y = ( 1.0 - t ) * $.y[$.count - 2] + t * $.y[$.count - 1];
+  //     var w = ( 1.0 - t ) * $.pressure[$.count - 2] * $.width + t * $.pressure[$.count - 1] * $.width;
+  //     ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+  //   }
+  // }
 
   function drawPointAll(){
     // d是$对象，r是数组索引

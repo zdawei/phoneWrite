@@ -11,16 +11,25 @@
 	};
 
 	var insertPic = function() {
-		alert(1);
+		console.log(_sec);
 	};
 
 	var picShare = function() {
 		alert(1);
 	};
 
-	Z.setBtnFunc('btnBack', btnBack);	
-	Z.setBtnFunc('setchar', setchar);	
-	Z.setBtnFunc('insertPic', insertPic);	
-	Z.setBtnFunc('picShare', picShare});
+	var handler = {
+
+		init : function () {
+			Z.setBtnFunc('btnBack', btnBack);	
+			Z.setBtnFunc('setchar', setchar);	
+			Z.setBtnFunc('insertPic', insertPic);	
+			Z.setBtnFunc('picShare', picShare);
+		}
+
+	};
+
+	// 启动
+	handler.init();
 	
 })();
