@@ -1,4 +1,4 @@
-(function() {
+$(function($) {
 	_sec.init();
 	var Z = _sec.Z;
 
@@ -7,15 +7,31 @@
 	};
 	
 	var setchar = function() {
-		alert(1);
 	};
 
-	var insertPic = function() {
-		console.log(_sec);
+	var insertPic = function(evt) {		
+		$('#myModal').on('click', function(evt) {
+			var target = evt.target;
+			if(target.nodeName == 'IMG' || target.nodeName == 'img') {
+				Z.ctx.clearRect(0, 0, Z.canvas.width, Z.canvas.height);
+				var dataChars=JSON.parse(localStorage.dataChars);
+				Z.ctx.drawImage(target, 0, 0, Z.canvas.width, Z.canvas.height); 
+				Z.writingChar();
+				$('#myModal').modal('hide');
+			}
+		});
 	};
 
 	var picShare = function() {
-		alert(1);
+		$('#picShare').popover({
+			animation : true,
+			placement : 'bottom',
+			title : "分享成功",
+			delay : 500
+		});
+		setTimeout(function() {
+			$('#picShare').popover('hide');
+		}, 2000);
 	};
 
 	var handler = {
@@ -32,4 +48,4 @@
 	// 启动
 	handler.init();
 	
-})();
+});

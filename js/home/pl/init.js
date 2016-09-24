@@ -184,8 +184,8 @@
 				case "prechars" : W.preChar();break;
 				case "btnClear" : W.clearPrint();break;
 				case "nextchars" : W.nextchar();break;
-				// case "setChar" : W.setChar();break;
-				case "setChar" : W.logData();break;
+				case "setChar" : W.setChar();break;
+				// case "setChar" : W.logData();break;
 			}
 		},false);
 	};

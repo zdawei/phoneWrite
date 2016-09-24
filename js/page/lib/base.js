@@ -41,9 +41,9 @@ _sec.pre = function() {
 
 	var bindDOM = function() {
 		image.src = "img/model.png";
-		window.addEventListener("load",screenCanvas,true);
-		window.addEventListener("load",writingChar,false);
-		window.addEventListener("resize",screenCanvas,true);
+		$(screenCanvas);
+		$(writingChar);
+		$(window).on('resize', screenCanvas);
 	};
 
 	var handler = {
@@ -69,6 +69,9 @@ _sec.pre = function() {
 
 	//外抛
 	it.setBtnFunc = handler.setBtnFunc;
+	it.ctx = ctx;
+	it.canvas = canvas;
+	it.writingChar = writingChar;
 
 	return it;
 	
