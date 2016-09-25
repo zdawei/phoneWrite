@@ -55,6 +55,30 @@
 				W.drawPointAll();
 			},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
 		}
+	};	
+
+	var xmlcharacterLocal = function(){
+		var char = prompt("请输入一个汉字","张");
+		if(!char) return ;
+		if(!char.length || char.length > 1){alert("输入有误!"); return arguments.callee();}
+		var path = "data\/datajs\/datajs\/"+char+".js";
+		// var path = "http://202.112.195.243/canvas/phoneWrite/datajs/"+char+".js";
+		// var docXML = loadXML(path);
+		loadJsonp(path);
+		script.onload = function(){
+			setTimeout(function(){
+				if("undefined" == typeof data) {alert("输入有误!");return ;}
+				changeXY(data,{
+				charBoxWidth : W.canvas.width ,
+				charRatio : 0.85 ,
+				aspectRatio : 4 / 3 ,
+				startPosition : {x : 0 , y : 0}
+				},500);
+				// drawPoint (docXML);
+				W.clearScreen();
+				W.drawPointAll();
+			},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
+		}
 	};
 
 	var changeXY = function(strokeArray, opts) {
@@ -177,7 +201,8 @@
 		document.body.addEventListener("click",function(evt){
 			//添加事件代理
 			switch(evt.target.id){
-				case "xmlcharacter" : xmlcharacter();break;
+				// case "xmlcharacter" : xmlcharacter();break;
+				case "xmlcharacter" : xmlcharacterLocal();break;
 				case "handwriting" : handwriting();break;
 				case "animation" : W.animation();break;
 				case "framework" : W.framework();break;

@@ -25,6 +25,7 @@ _.pre = function(){
   	minPress : 0.05,
   	maxPress : 0.2,
   	width : 50,
+    density : 0.5,
     //增加了draw函数后的参数
     draw_wmin : 3.0,
     draw_wmax : 11,
@@ -190,8 +191,8 @@ _.pre = function(){
     }
   };
 
-  // function draw() {
-  function drawPoint() {
+  function draw() {
+  // function drawPoint() {
     var d1, sampleNumber;
     var point, prePoint;
     var color;
@@ -370,15 +371,35 @@ _.pre = function(){
   }
 
 
-  // function drawPoint(){
-  // //count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
-  //   var sampleNumber = parseInt($.distance[$.count - 1] / 0.5);
-  //   for ( var u = 0 ; u < sampleNumber ; u++ ){
-  //     var t = u / (sampleNumber - 1);
-  //     var x = ( 1.0 - t ) * $.x[$.count - 2] + t * $.x[$.count - 1];
-  //     var y = ( 1.0 - t ) * $.y[$.count - 2] + t * $.y[$.count - 1];
-  //     var w = ( 1.0 - t ) * $.pressure[$.count - 2] * $.width + t * $.pressure[$.count - 1] * $.width;
-  //     ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+  function drawPoint(){
+  //count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
+    var sampleNumber = parseInt($.distance[$.count - 1] / $.density);
+    for ( var u = 0 ; u < sampleNumber ; u++ ){
+      var t = u / (sampleNumber - 1);
+      var x = ( 1.0 - t ) * $.x[$.count - 2] + t * $.x[$.count - 1];
+      var y = ( 1.0 - t ) * $.y[$.count - 2] + t * $.y[$.count - 1];
+      var w = ( 1.0 - t ) * $.pressure[$.count - 2] * $.width + t * $.pressure[$.count - 1] * $.width;
+      ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+    }
+  }
+
+  // function processFanal() {
+  //   // 添加一个专门处理笔画结尾的函数
+  //   if($.pressure[$.count - 1] <= $.pressure[$.count - 2] && 
+  //     $.pressure[$.count - 2] <= $.pressure[$.count - 3]) {
+  //     // ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );      
+  //     var slope = ($.y[$.count - 1] - $.y[$.count - 2]) / ($.x[$.count - 1] - $.x[$.count - 2]);
+  //     var xDistance = 20;
+  //     var yDistance = slope * ($.x[$.count - 1] - $.x[$.count - 2] + xDistance);
+  //     console.log(xDistance, yDistance, slope);
+  //     var sampleNumber = parseInt($.distance[$.count - 1] / $.density);
+  //     for ( var u = 0 ; u < sampleNumber ; u++ ){
+  //       var t = u / (sampleNumber - 1);
+  //       var x = ( 1.0 - t ) * $.x[$.count - 1] + t * (slope < 0 ? $.x[$.count - 1] + xDistance : $.x[$.count - 1] - xDistance);
+  //       var y = ( 1.0 - t ) * $.y[$.count - 1] + t * ($.y[$.count - 1] + yDistance);
+  //       var w = ( 1.0 - t ) * $.pressure[$.count - 1] * $.width + 0;
+  //       ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
+  //     }      
   //   }
   // }
 
@@ -386,7 +407,7 @@ _.pre = function(){
     // d是$对象，r是数组索引
     for(var r = 0;r < $.count;r++){
       if($.locks[r]){
-        var sampleNumber = parseInt($.distance[r] / 0.5);
+        var sampleNumber = parseInt($.distance[r] / $.density);
         for(var u = 0;u < sampleNumber;u++){
           var t = u / (sampleNumber - 1);
           var x = (1.0 - t) * $.x[r - 1] + t * $.x[r];

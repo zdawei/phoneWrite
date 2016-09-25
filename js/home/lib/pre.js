@@ -27,6 +27,7 @@ var _ = {
 				'<li><p>minPress<input name = \"minPress\"  type = \"range\" max = \"0.1\"  min = \"0.01\"  step = \"0.01\"  value = \"0.05\" /></p></li>'+
 				// '<li><p>maxPress<input name = \"maxPress\"  type = \"range\" max = \"0.5\"  min = \"0.1\"  step = \"0.01\"  value = \"0.2\" /></p></li>'+
 				'<li><p>width<input name = \"width\"  type = \"range\" max = \"100\"  min = \"10\"   step = \"1\"  value = \"50\"  /></p></li>'+
+				'<li><p>density<input name = \"density\"  type = \"range\" max = \"2\"  min = \"0.1\"   step = \"0.1\"  value = \"0.5\"  /></p></li>'+
 				'<li><p>draw_wmin<input name = \"draw_wmin\"  type = \"range\" max = \"6\"  min = \"1\"   step = \"1\"  value = \"3.0\"  /></p></li>'+
 				'<li><p>draw_wmax<input name = \"draw_wmax\"  type = \"range\" max = \"14\"  min = \"7\"   step = \"1\"  value = \"11\"  /></p></li>'+
 				'<li><p>draw_sigmoid<input name = \"draw_sigmoid\"  type = \"range\" max = \"0.6\"  min = \"0.1\"   step = \"0.1\"  value = \"0.3\"  /></p></li>'+
