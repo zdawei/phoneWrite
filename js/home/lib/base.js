@@ -550,20 +550,20 @@ _.pre = function(){
 
   var writeOpen = function(){
     //canvas上书写的事件绑定函数
-    var touch = ("createTouch" in document);
+    var touch = ("ontouchstart" in document);
     var StartEvent = touch ? "touchstart" : "mousedown";
     var MoveEvent = touch ? "touchmove" : "mousemove";
     var EndEvent = touch ? "touchend" : "mouseup";
     var lock = false;
-    canvas['on' + StartEvent] = function(e){
+    canvas.addEventListener(StartEvent, function(e) {
       var t = touch ? e.touches[0] : e;
       var x = t.pageX - t.target.offsetLeft;
       var y = t.pageY - t.target.offsetTop;
       var time = new Date().getTime();
       pushAll(x,y,time,false);
       lock = true;
-    }
-    canvas['on' + MoveEvent] = function(e){
+    }, false);
+    canvas.addEventListener(MoveEvent, function(e) {
       if(lock){
         var t = touch ? e.touches[0] : e;
         var x = t.pageX - t.target.offsetLeft;
@@ -572,13 +572,13 @@ _.pre = function(){
         pushAll(x,y,time,true);
         drawPoint();
       }
-    }
-    canvas.onmouseout = function(e){
+    }, false);
+    canvas.addEventListener("mouseout", function() {
       lock = false;
-    }
-    canvas['on' + EndEvent] = function(e){
+    }, false);
+    canvas.addEventListener(EndEvent, function(e) {
       lock = false;
-    }
+    }, false);
   }
 
   return {
