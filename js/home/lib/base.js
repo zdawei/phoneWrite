@@ -191,8 +191,8 @@ _.pre = function(){
     }
   };
 
-  function draw() {
-  // function drawPoint() {
+  // function draw() {
+  function drawPoint() {
     var d1, sampleNumber;
     var point, prePoint;
     var color;
@@ -371,7 +371,7 @@ _.pre = function(){
   }
 
 
-  function drawPoint(){
+  function drawPoint123(){
   //count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
     var sampleNumber = parseInt($.distance[$.count - 1] / $.density);
     for ( var u = 0 ; u < sampleNumber ; u++ ){
