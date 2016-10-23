@@ -1,4 +1,4 @@
-﻿html,body,#main{
+﻿html,body{
 	height:100%;
 	width:100%;
 	border:0;
@@ -6,7 +6,7 @@
 	padding:0;
 	min-height: 267px;	
 }
-button{
+/*button{
 	height:8%;
 	width:25%;
 	float:left;
@@ -38,7 +38,7 @@ body>button{
 img[src="img/model.png"]{
 	display:none;
 }
-/***************follow's index.html*************************************/
+**************follow's index.html************************************
 #tip{
 	width:100%;
 	min-width: 103px;
@@ -61,4 +61,4 @@ img[src="img/model.png"]{
 }
 /*.setChar>form>input{
 	display: block;
-}*/
+}*/*/
