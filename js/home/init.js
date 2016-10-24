@@ -1,4 +1,4 @@
-define(['jquery', 'homeLib/template', 'homeLib/setcanvas', 'lib/writing', 'homeLib/bindEvt'], function($, t, s, w, b) {
+define(['jquery', 'homeLib/template', 'homeLib/setcanvas', 'homeLib/bindEvt'], function($, t, s, b) {
 
 	$('head').prepend(t.head);
 	$('body').prepend(t.nav);
@@ -10,7 +10,6 @@ define(['jquery', 'homeLib/template', 'homeLib/setcanvas', 'lib/writing', 'homeL
 
 		var init = function() {
 			s.start(canvas);
-			w(canvas, image).init();
 			b(canvas, image).init();
 		};
 

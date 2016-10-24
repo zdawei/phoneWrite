@@ -64,7 +64,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		//     $.a.push(acceleration);
 		// };
 
-		function pushAll(x,y,time,lock){
+		function pushAll(x,y,time,lock) {
 		  //只提供x,y,time,lock自动计算所有参数，并全部压入
 		  data.x.push(x);
 		  data.y.push(y);
@@ -94,7 +94,6 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		}
 
   		function drawPointAll() {
-  		  // d是$对象，r是数组索引
   		  for(var r = 0;r < data.count;r++) {
   		    if(data.locks[r]) {
   		      var sampleNumber = parseInt(data.distance[r] / initData.density);
@@ -110,12 +109,11 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		}
 
 		var drawFrameWork = function() {
-			// d是$对象，r是数组索引
 			clearScreen();
 			ctx.beginPath();
 			for(var r = 0 ; r < data.count ; r++) {
 			  if(data.locks[r]){
-			    var distant = Math.max(parseInt(data.pressure[r] * 60) , 5) ;
+			    var distant = Math.max(parseInt(data.pressure[r] * 60) , 5);
 			    ctx.moveTo(data.x[r - 1],data.y[r - 1]);
 			    ctx.lineTo(data.x[r],data.y[r]);
 			    ctx.moveTo(data.x[r] + distant - 2,data.y[r] + distant - 2);
@@ -123,7 +121,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			  }
 			}
 			ctx.stroke();
-		}
+		};
 
 		var nextChar = function() {
 			if(data.count == 0) {alert('请输入汉字！'); return ;}
@@ -158,7 +156,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		    } else {
 		      drawPoint(count);
 		      time = data.time[count + 1] - data.time[count];
-		      setTimeout(animfunc, time);   
+		      setTimeout(animfunc, time); 
 		    }
 		  }
 		  var handle = setTimeout(animfunc, time);
@@ -177,7 +175,38 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			s.qt(ctx);
   		}
 
-		var writeOpen = function(){
+		function setArg(name,value) {
+		  //这个是通过滑动条设置参数的
+		  initData[name] = value;
+		  var original = cloneCharData(data);
+		  clearPrint();
+		  for(var i = 0 ; i < original.count ; i++) {
+		    pushAll(original.x[i],original.y[i],original.time[i],original.locks[i]);
+		    drawPoint(i);
+		  }
+		  original = null;
+		}
+
+		var setChar = function() {
+    		if($data.getDatasLength()) {
+    		  $data.saveLocalStorage();
+    		  return true;
+    		} else {
+    		  alert("没有汉字");
+    		  return false;
+    		}
+		};
+
+  		function cloneCharData(obj) {
+  		//深度复制对象
+  		  var result = {};
+  		  for(var key in obj){
+  		    result[key] = obj[key];
+  		  }
+  		  return result;
+  		}
+		
+		var writeOpen = function() {
 		  //canvas上书写的事件绑定函数
 		  var touch = ("ontouchstart" in document);
 		  var StartEvent = touch ? "touchstart" : "mousedown";
@@ -198,7 +227,6 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		      var x = t.pageX - t.target.offsetLeft;
 		      var y = t.pageY - t.target.offsetTop;
 		      var time = new Date().getTime();
-		      var w = 10;
 		      pushAll(x,y,time,true);
 		      drawPoint(data.count);
 		    }
@@ -213,16 +241,19 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 		var init = function() {
 			writeOpen();
-		}
+		};
 
 		var that = {
 			init : init,
+			pushAll : pushAll,
 			drawPoint : drawPoint,
 			drawFrameWork : drawFrameWork,
 			animation : animation,
 			nextChar : nextChar,
 			preChar : preChar,
 			drawPointAll : drawPointAll,
+			setArg : setArg,
+			setChar : setChar,
 			clearPrint : clearPrint,
 			clearScreen : clearScreen
 		};

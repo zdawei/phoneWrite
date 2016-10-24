@@ -45,6 +45,23 @@ define(['jquery'], function($) {
 				return data;
 			},
 
+			saveLocalStorage : function() {
+			    var dataChar = JSON.stringify(datas);
+      			localStorage.removeItem("dataChars");
+      			localStorage.setItem("dataChars",dataChar);
+			},
+
+			getLocalStorage : function() {
+				var dataChar = localStorage.getItem("dataChars");	
+				datas = JSON.parse(dataChar);
+				data = datas[0];
+				dataChar = null;
+			},
+
+			getDatasLength : function() {
+				return datas.length;
+			},
+
 			pop : function(pos) {
 				that.clear();
 				data = datas[pos];
