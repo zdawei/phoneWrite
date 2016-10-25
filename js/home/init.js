@@ -2,7 +2,7 @@ define(['jquery', 'homeLib/template', 'homeLib/setcanvas', 'homeLib/bindEvt'], f
 
 	$('head').prepend(t.head);
 	$('body').prepend(t.nav);
-
+	
 	return function() {
 		var image = new Image();
 		image.src = "img/model.png";//笔刷模型

@@ -28,6 +28,7 @@ _sec.pre = function() {
 	        var y = ((1.0 - t) * d.y[r - 1] + t * d.y[r]) / canvas.height * 1.5 * beishu + permY * height;
 	        var w = ((1.0 - t) * d.pressure[r - 1] * d.width + t * d.pressure[r] * d.width) / widthbeishu;  
 	        ctx.drawImage(image, x - w, y - w, w * 2, w * 2);
+
 	      }
 	    }
 	  }
@@ -42,7 +43,9 @@ _sec.pre = function() {
 	var bindDOM = function() {
 		image.src = "img/model.png";
 		$(screenCanvas);
-		$(writingChar);
+		image.onload = function() {
+			writingChar();
+		}
 		$(window).on('resize', screenCanvas);
 	};
 
