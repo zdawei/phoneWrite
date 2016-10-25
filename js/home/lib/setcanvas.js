@@ -31,7 +31,7 @@ define(['jquery'], function($) {
 		start : function(canvas) {
 			$('body').on('touchmove', function(evt) {
 				// 固定页面
-				event.preventDefault();
+				evt.preventDefault();
 			})
 			var ctx = canvas.getContext("2d");
 			var screencanvas = function(){
