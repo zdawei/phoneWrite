@@ -1,18 +1,6 @@
 define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 	var $data = d();
-	var initData = {
-  		//以下是参数设置
-  		gaoss : 1.3,//高斯初始值
-  		minPress : 0.05,
-  		maxPress : 0.2,
-  		width : 50,
-    	density : 0.5,
-    	//增加了draw函数后的参数
-    	draw_wmin : 3.0,
-    	draw_wmax : 11,
-    	draw_sigmoid : 0.3
-	};
 
 	return function(canvas, image) {
 
@@ -42,10 +30,10 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			if(data.count > 2) {
 				data.speed[data.count - 1] = data.speed[data.count - 1] * 0.6 + data.speed[data.count - 2] * 0.3 + data.speed[data.count - 3] * 0.1;
 			}
-			var ratio = initData.maxPress / gaussian(0, initData.gaoss);
-			var speed = gaussian(data.speed[data.count - 1], initData.gaoss);
+			var ratio = data.maxPress / gaussian(0, data.gaoss);
+			var speed = gaussian(data.speed[data.count - 1], data.gaoss);
 			data.pressure[data.count - 1] = (ratio * speed);
-			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], initData.maxPress), initData.minPress);
+			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
 			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;
 		};
 
@@ -73,7 +61,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		  data.count++;
 		  if(!(data.locks[data.count - 1]) || data.count - 1 == 0){//加入每个笔画头一节点的初试值
 		    data.speed.push(0);
-		    data.pressure.push(initData.maxPress);
+		    data.pressure.push(data.maxPress);
 		    data.distance.push(0);
 		  }else{
 		    parameter(x,y,time);//速度计算函数，包括计算距离并且加入了距离的值
@@ -83,12 +71,12 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 		function drawPoint(count) {
   		//count是数组索引,注意count是从当前节点开始的,是从count-1到count的节点绘画
-  		  var sampleNumber = parseInt(data.distance[count - 1] / initData.density);
+  		  var sampleNumber = parseInt(data.distance[count - 1] / data.density);
   		  for ( var u = 0 ; u < sampleNumber ; u++ ) {
   		    var t = u / (sampleNumber - 1);
   		    var x = ( 1.0 - t ) * data.x[count - 2] + t * data.x[count - 1];
   		    var y = ( 1.0 - t ) * data.y[count - 2] + t * data.y[count - 1];
-  		    var w = ( 1.0 - t ) * data.pressure[count - 2] * initData.width + t * data.pressure[count - 1] * initData.width;
+  		    var w = ( 1.0 - t ) * data.pressure[count - 2] * data.width + t * data.pressure[count - 1] * data.width;
   		    ctx.drawImage( image , x - w , y - w , w * 2 , w * 2 );
   		  }
   		}
@@ -96,12 +84,12 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		function drawPointAll() {
   		  for(var r = 0;r < data.count;r++) {
   		    if(data.locks[r]) {
-  		      var sampleNumber = parseInt(data.distance[r] / initData.density);
+  		      var sampleNumber = parseInt(data.distance[r] / data.density);
   		      for(var u = 0;u < sampleNumber;u++){
   		        var t = u / (sampleNumber - 1);
   		        var x = (1.0 - t) * data.x[r - 1] + t * data.x[r];
   		        var y = (1.0 - t) * data.y[r - 1] + t * data.y[r];
-  		        var w = (1.0 - t) * data.pressure[r - 1] * initData.width + t * data.pressure[r] * initData.width;
+  		        var w = (1.0 - t) * data.pressure[r - 1] * data.width + t * data.pressure[r] * data.width;
   		        ctx.drawImage(image,x - w,y - w,w * 2,w * 2);
   		      }
   		    }
@@ -177,7 +165,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 		function setArg(name,value) {
 		  //这个是通过滑动条设置参数的
-		  initData[name] = value;
+		  data[name] = value;
 		  var original = cloneCharData(data);
 		  clearPrint();
 		  for(var i = 0 ; i < original.count ; i++) {

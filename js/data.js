@@ -9,7 +9,17 @@ define(['jquery'], function($) {
   		distance : [],//距离
   		speed : [],//速度
   		pressure : [],//压力
-    	a : []
+    	a : [],
+    	//参数设置
+  		gaoss : 1.3,//高斯初始值
+  		minPress : 0.05,
+  		maxPress : 0.2,
+  		width : 50,
+    	density : 0.5,
+    	//增加了draw函数后的参数
+    	draw_wmin : 3.0,
+    	draw_wmax : 11,
+    	draw_sigmoid : 0.3
 	};
 	var account = 0;
 
