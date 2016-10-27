@@ -161,7 +161,7 @@ define(['jquery', 'lib/writing'], function($, w) {
 
   			setChar : function() {
   				if(write.setChar()) {
-					var w = window.open("second.html?from=first","_self");
+					var w = window.open("second.html","_self");
   				}
   			}
 

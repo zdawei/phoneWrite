@@ -16,6 +16,10 @@ _sec.pre = function() {
 	  canvas.height = document.documentElement.clientHeight - btnBack.offsetHeight - 5;
 	};
 
+	function clearPrint() {
+  	  ctx.clearRect(0,0,canvas.width,canvas.height);
+  	}
+
 	var drawPointAll = function(d,i) {
 	  var col = 3, row = 5, beishu = 90, widthbeishu = 3, permY = parseInt(i / col), permX = i % col;
 	  var width = canvas.width / col, height = canvas.height / row;
@@ -34,10 +38,17 @@ _sec.pre = function() {
 	  }
 	};
 
-	var writingChar = function() {
-	  for(var i = 0; i < dataChars.length; i++) {
-	    drawPointAll(dataChars[i], i);     
-	  }
+	var writingChar = function(opt) {
+		if(!opt) {
+		  	for(var i = 0; i < dataChars.length; i++) {
+		    	drawPointAll(dataChars[i], i);     
+		  	}
+		} else { 
+			var min = Math.min(opt.sum, dataChars.length);
+			for(var i = 0; i < min; i++) {
+				drawPointAll(dataChars[i], opt.pos[i]);     
+			}
+		}
 	};
 
 	var bindDOM = function() {
@@ -61,7 +72,8 @@ _sec.pre = function() {
 				case 'setchar' : setchar.addEventListener("click",callback,true);break;
 				case 'insertPic' : insertPic.addEventListener("click",callback,true);break;
 				case 'picShare' : picShare.addEventListener("click",callback,true);break;
-				default : throw ('btn error in page\\lib\\base.js');
+				default : $('#shape').on("click",callback);
+				// default : throw ('btn error in page\\lib\\base.js');
 			}
 		}
 
@@ -75,6 +87,7 @@ _sec.pre = function() {
 	it.ctx = ctx;
 	it.canvas = canvas;
 	it.writingChar = writingChar;
+	it.clearPrint = clearPrint;
 
 	return it;
 	
