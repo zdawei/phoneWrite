@@ -38,12 +38,12 @@ var _sec = {
 			'</div><!-- /.modal -->'+
 		'</div>'+
 		//以下调整
-		'<ul class="dropdown-menu" style="position:absolute;top:8%;left:25%"  role="menu">'+
-			'<li><a href="#">普通形（未开发）</a></li>'+
-			'<li><a href="#">十字形（未开发）</a></li>'+
-			'<li><a href="#">门字形（未开发）</a></li>'+
+		'<ul class="dropdown-menu" style="position:absolute;top:8%;left:25%"  role="menu" id="shape">'+
+			'<li><a href="#" data-shape="1" >普通形</a></li>'+
+			'<li><a href="#" data-shape="2">十字形</a></li>'+
+			'<li><a href="#" data-shape="3">门字形</a></li>'+
 			'<li class="divider"></li>'+
-			'<li><a href="#">随机（未开发）</a></li>'+
+			'<li><a href="#" data-shape="0">随机</a></li>'+
 		'</ul>'
 	}
 	,init : function() {
