@@ -7,31 +7,46 @@ define(['bootstrap'], {
 
 	nav : 	'<div class="container bindEvt">'+
  				'<div class="row">'+
- 					'<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">'+
+ 					'<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding:0">'+
  						'<div class="btn-toolbar" role="toolbar">'+
  							'<div class="btn-group">'+
 								'<button  id = "xmlcharacter" class =  "btn btn-default" type = "button"  title = "汉字库">字库</button>'+
 								'<button  id = "animation" class =  "btn btn-default" type = "button"  title = "动态笔画">动画</button>'+
 								'<button  id = "framework" class =  "btn btn-default" type = "button"  title = "笔画框架">框架</button>'+
-								'<button  id = "handwriting" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title = "调整参数">'+
-								'	参数 <span class="caret"></span>'+
-								'</button>'+
-								'<form role="menu" class="dropdown-menu" style="right:0;width:100%">'+
-									'<ul class="list-group">'+
-										'<li class="list-group-item"><p>gaoss<input name = \"gaoss\"  type = \"range\" max = \"2.0\"  min = \"1.0\"  step = \"0.1\" value = \"1.3\"  /></p></li>'+
-										'<li class="list-group-item"><p>minPress<input name = \"minPress\"  type = \"range\" max = \"0.1\"  min = \"0.01\"  step = \"0.01\"  value = \"0.05\" /></p></li>'+
-										// '<li><p>maxPress<input name = \"maxPress\"  type = \"range\" max = \"0.5\"  min = \"0.1\"  step = \"0.01\"  value = \"0.2\" /></p></li>'+
-										'<li class="list-group-item"><p>width<input name = \"width\"  type = \"range\" max = \"100\"  min = \"10\"   step = \"1\"  value = \"50\"  /></p></li>'+
-										'<li class="list-group-item"><p>density<input name = \"density\"  type = \"range\" max = \"2\"  min = \"0.1\"   step = \"0.1\"  value = \"0.5\"  /></p></li>'+
-										// '<li><p>draw_wmin<input name = \"draw_wmin\"  type = \"range\" max = \"6\"  min = \"1\"   step = \"1\"  value = \"3.0\"  /></p></li>'+
-										// '<li><p>draw_wmax<input name = \"draw_wmax\"  type = \"range\" max = \"14\"  min = \"7\"   step = \"1\"  value = \"11\"  /></p></li>'+
-										// '<li><p>draw_sigmoid<input name = \"draw_sigmoid\"  type = \"range\" max = \"0.6\"  min = \"0.1\"   step = \"0.1\"  value = \"0.3\"  /></p></li>'+
-									'</ul>								'+
-								'</form>'+
+								'<div class="dropdown" style="display:inline-block">'+
+									'<button  id = "handwriting" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title = "调整参数">'+
+									'	参数 <span class="caret"></span>'+
+									'</button>'+
+									'<form role="menu" class="dropdown-menu" style="right:0;width:100%;opacity:0.8">'+
+										'<ul class="list-group">'+
+											'<li class="list-group-item"><p>gaoss<input name = \"gaoss\"  type = \"range\" max = \"2.0\"  min = \"1.0\"  step = \"0.1\" value = \"1.3\"  /></p></li>'+
+											'<li class="list-group-item"><p>sigmoid<input name = \"sigmoid\"  type = \"range\" max = \"10.0\"  min = \"1.0\"  step = \"1\" value = \"3\"  /></p></li>'+
+											'<li class="list-group-item"><p>cos<input name = \"cos\"  type = \"range\" max = \"2.0\"  min = \"0.1\"  step = \"0.1\" value = \"1\"  /></p></li>'+
+											'<li class="list-group-item"><p>acceleration<input name = \"acceleration\"  type = \"range\" max = \"10.0\"  min = \"0.1\"  step = \"0.1\" value = \"0.5\"  /></p></li>'+
+											'<li class="list-group-item"><p>minPress<input name = \"minPress\"  type = \"range\" max = \"0.1\"  min = \"0.01\"  step = \"0.01\"  value = \"0.05\" /></p></li>'+
+											'<li class="list-group-item"><p>maxPress<input name = \"maxPress\"  type = \"range\" max = \"0.5\"  min = \"0.1\"  step = \"0.01\"  value = \"0.2\" /></p></li>'+
+											'<li class="list-group-item"><p>width<input name = \"width\"  type = \"range\" max = \"100\"  min = \"10\"   step = \"1\"  value = \"50\"  /></p></li>'+
+											'<li class="list-group-item"><p>density<input name = \"density\"  type = \"range\" max = \"2\"  min = \"0.1\"   step = \"0.1\"  value = \"0.5\"  /></p></li>'+
+										'</ul>								'+
+									'</form>'+
+								'</div>'+
+								'<div class="dropdown" style="display:inline-block">'+
+									'<button  id = "settingWidth" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title = "调整宽度">'+
+									'	宽度函数 <span class="caret"></span>'+
+									'</button>'+
+									'<form role="menu" class="dropdown-menu" style="left:-68px;width:100%;">'+
+										'<ul class="list-group">'+
+											'<li class="list-group-item"><a href="javascript:void(0);">gaussian</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">sigmoid</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">cos</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">acceleration</a></li>'+
+										'</ul>								'+
+									'</form>'+
+								'</div>'+
 							'</div>'+
 						'</div>'+
 					'</div>'+
-					'<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">'+
+					'<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding:0">'+
  						'<div class="btn-toolbar" role="toolbar">'+
  							'<div class="btn-group">'+
 								'<button  id = "prechars" class =  "btn btn-default" type = "button"  title = "上一个汉字">上一个</button>'+
