@@ -130,10 +130,14 @@ define(['jquery', 'lib/writing'], function($, w) {
 				}
 			},
 
-			handwriting : function() {
-				var form = document.forms[0];
-				form.addEventListener("change",function(e) {
-					write.setArg(e.target.name,e.target.value);
+			formFunc : function() {
+				var form0 = document.forms[0];
+				form0.addEventListener("change",function(e) {
+					write.setArg(e.target.name,e.target.value, true);
+				},false);
+				var form1 = document.forms[1];
+				form1.addEventListener("click",function(e) {
+					write.setArg('widthFunc', $(e.target).text(), false);
 				},false);
 			},
 
@@ -169,19 +173,20 @@ define(['jquery', 'lib/writing'], function($, w) {
 
 		var init = function() {
 			//添加事件代理
-			write.init();
+			write.init();//write模块的初始化
 			script = document.createElement("script");//用于jsonp
 			document.body.appendChild(script);
+			fn.formFunc();//表单绑定事件
 			$('.bindEvt').on('click', function(evt) {
 				switch($(evt.target).attr('id')) {
 					case "xmlcharacter" : fn.xmlcharacterLocal();break;
-					case "handwriting" : fn.handwriting();break;
 					case "animation" : fn.animation();break;
 					case "framework" : fn.framework();break;
 					case "prechars" : fn.preChar();break;
 					case "btnClear" : fn.clearPrint();break;
 					case "nextchars" : fn.nextChar();break;
 					case "setChar" : fn.setChar();break;
+					// case "setChar" : fn.setChar();break;
 				}
 			});
 		};

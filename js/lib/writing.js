@@ -12,6 +12,49 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		  return ((1 / (Math.sqrt(2 * Math.PI) * gauss)) * Math.pow(Math.E,-(v * v) / (2 * gauss * gauss)));
 		};
 
+		var gaussianPressure = function() {
+			var ratio = data.maxPress / gaussian(0, data.gaoss);
+			var speed = gaussian(data.speed[data.count - 1], data.gaoss);
+			data.pressure[data.count - 1] = (ratio * speed);
+			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
+			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;
+		};
+
+		var sigmoidPressure = function() {
+			var speed = data.width * 2 / (1 + Math.pow(Math.E, data.sigmoid * data.speed[data.count - 1]));
+			data.pressure[data.count - 1] = speed;
+			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
+			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;	
+		};
+
+		var cosPressure = function() {
+			// var v = Math.min(Math.max(data.speed[data.count - 1], 0), Math.PI / (4 * data.cos));
+			// var speed = data.width * Math.cos(data.cos * v);console.log(speed / 300);
+			var speed = data.width * Math.cos(data.cos * data.speed[data.count - 1]);
+			data.pressure[data.count - 1] = speed;
+			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
+			// data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1] / 300, data.maxPress), data.minPress);
+			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;	
+		};
+
+		var accelerationPressure = function() {
+			// var a = (data.speed[data.count - 1] - data.speed[data.count - 2]) / (data.time[data.count - 1] - data.time[data.count - 2]);
+			// var g = Math.pow(Math.E, -data.acceleration * a);
+			// var speed = data.width * g * Math.pow(Math.E, -Math.pow(data.speed[data.count - 1], 2) / (2 * Math.pow(data.acceleration, 2)));
+			// console.log(speed);
+			// data.pressure[data.count - 1] = speed;
+			// data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
+			// console.log(data.pressure[data.count - 1]);
+			// data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;	
+			var a = (data.speed[data.count - 1] - data.speed[data.count - 2]) / (data.time[data.count - 1] - data.time[data.count - 2]);
+			var g = Math.pow(Math.E, -data.acceleration * a);
+			var ratio = data.maxPress / gaussian(0, data.acceleration);
+			var speed = gaussian(data.speed[data.count - 1], data.acceleration) * g;
+			data.pressure[data.count - 1] = (ratio * speed);
+			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
+			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;
+		};
+
 	    var distance = function(x1, y1, x2, y2) {
 			return (Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
 	    };
@@ -30,29 +73,9 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			if(data.count > 2) {
 				data.speed[data.count - 1] = data.speed[data.count - 1] * 0.6 + data.speed[data.count - 2] * 0.3 + data.speed[data.count - 3] * 0.1;
 			}
-			var ratio = data.maxPress / gaussian(0, data.gaoss);
-			var speed = gaussian(data.speed[data.count - 1], data.gaoss);
-			data.pressure[data.count - 1] = (ratio * speed);
-			data.pressure[data.count - 1] = Math.max(Math.min(data.pressure[data.count - 1], data.maxPress), data.minPress);
-			data.pressure[data.count - 1] = (data.pressure[data.count - 1] + data.pressure[data.count - 2]) / 2;
 		};
 
-		// var setAcceleration = function() {
-		//     var acceleration, v1, v2;
-
-		//     if($.count == 1) {
-		//       acceleration = 0;
-		//     }else {
-		//       var distance = distance($.x[$.count - 1], $.y[$.count - 1], $.x[$.count - 2], $.y[$.count - 2]);
-		//       v1 = $.speed[$.count - 2];
-		//       v2 = $.speed[$.count - 1];
-		//       var deltatime = $.time[$.count - 1] - $.time[$.count - 2];
-		//       acceleration = distance < 3 ? 0 : (v2 - v1) / deltatime;
-		//     }
-		//     $.a.push(acceleration);
-		// };
-
-		function pushAll(x,y,time,lock) {
+		function pushAll(x,y,time,lock, widthValue) {
 		  //只提供x,y,time,lock自动计算所有参数，并全部压入
 		  data.x.push(x);
 		  data.y.push(y);
@@ -65,8 +88,13 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		    data.distance.push(0);
 		  }else{
 		    parameter(x,y,time);//速度计算函数，包括计算距离并且加入了距离的值
+		  	switch(data.widthFunc) {
+		  		case "gaussian" : gaussianPressure(); break;
+		  		case "sigmoid" : sigmoidPressure(); break;
+		  		case "cos" : cosPressure(); break;
+		  		case "acceleration" : accelerationPressure(); break;
+		  	}
 		  }
-		  // setAcceleration();
 		}
 
 		function drawPoint(count) {
@@ -163,9 +191,10 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			s.qt(ctx);
   		}
 
-		function setArg(name,value) {
+		function setArg(name,value, boolen) {
 		  //这个是通过滑动条设置参数的
-		  data[name] = value;
+		  // boolen是用来判断是从宽度函数过来的还是从参数过来的,最后判断是否应该转换为数字
+		  data[name] = boolen ? parseFloat(value) : value;
 		  var original = cloneCharData(data);
 		  clearPrint();
 		  for(var i = 0 ; i < original.count ; i++) {

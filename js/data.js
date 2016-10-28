@@ -1,6 +1,7 @@
 define(['jquery'], function($) {
 	var datas = [];
-	var data = {
+	// var data = {
+	window.data = {
 	  	x : [],//x坐标
   		y : [],//y坐标
   		time : [],//时间
@@ -9,9 +10,12 @@ define(['jquery'], function($) {
   		distance : [],//距离
   		speed : [],//速度
   		pressure : [],//压力
-    	a : [],
     	//参数设置
+    	widthFunc : 'gaussian',//处理宽度函数的初始值
   		gaoss : 1.3,//高斯初始值
+  		sigmoid : 3,//sigmoid初始值
+  		cos : 1,//余弦初始值
+    	acceleration : 0.5,
   		minPress : 0.05,
   		maxPress : 0.2,
   		width : 50,
