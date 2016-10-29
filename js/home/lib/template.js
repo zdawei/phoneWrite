@@ -33,8 +33,6 @@ define(['bootstrap'], {
 										'</ul>								'+
 									'</form>'+
 								'</div>'+
-								// '<button  id = "framework" class =  "btn btn-default" type = "button"  title = "笔画框架">框架</button>'+
-								// '<button  id = "changeCanvas" class =  "btn btn-default" type = "button"  title = "更换写字板">换</button>'+
 								'<div class="dropdown" style="display:inline-block">'+
 									'<button  id = "handwriting" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title = "调整参数">'+
 									'	参数 <span class="caret"></span>'+
@@ -89,5 +87,7 @@ define(['bootstrap'], {
 					'</div>'+
  				'</div>'+
 			'</div>'+
+			'<div id = "tip"><p>当前没写汉字！</p></div>'+
+			'<div id = "position"><p>没有坐标信息！</p></div>'+
 			'<canvas id="writing"></canvas>'
 });

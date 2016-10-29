@@ -6,6 +6,9 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 		var ctx = canvas.getContext("2d");
 		var data = $data.getData();
+		var opts = {
+			setPosMess : null
+		};
 
 		var gaussian = function(v, gauss) {
 		//高斯计算公式
@@ -150,12 +153,27 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			ctx.stroke();
 		};
 
+		function setCountChar() {
+  			//设置汉字提示符
+  			if(!$('#tip').length) {return ;}
+  			var account = $data.getCharsAccount() + 1;
+  			var currentChar = $data.getDatasLength();
+  			var totalChar = $data.getTotalChar();
+  			if(currentChar == 0) {
+  				$('#tip p').text('当前没写汉字！');
+  			} else {
+  				var mess = "当前第：" + account + "个汉字；已写：" + currentChar + "个汉字；总共：" + totalChar ;
+  				$('#tip p').text(mess);
+  			}
+		}
+
 		var nextChar = function() {
 			if(data.count == 0) {alert('请输入汉字！'); return ;}
 			$data.push();
 			clearPrint();
 			data = $data.next();
 			data && data.count && drawPointAll();
+			setCountChar();
 		};
 
 		function preChar() {
@@ -164,6 +182,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			clearPrint();
 			data = $data.pre();
 			data && data.count && drawPointAll();
+			setCountChar();
   		}
 
 		var animation = function(boolen) {
@@ -241,7 +260,22 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		  }
   		  return result;
   		}
-		
+
+  		function setPositionMess() {
+		    if($('#position').length) {
+		    	clearTimeout(opts.setPosMess);
+		    	var noMess = '没有坐标信息！';
+		    	var mess = ' x:' + data.x[data.count -1] + 
+		    			   ' y:' + data.y[data.count - 1] + 
+		    			   ' speed:' + data.speed[data.count - 1].toFixed(5) +
+		    			   ' pressure:' + data.pressure[data.count - 1].toFixed(5);
+		    	$('#position p').text(mess);
+		    	opts.setPosMess = setTimeout(function() {
+		    		$('#position p').text(noMess);
+		    	}, 1000);
+		    }
+  		}
+
 		var writeOpen = function() {
 		  //canvas上书写的事件绑定函数
 		  var touch = ("ontouchstart" in document);
@@ -265,6 +299,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		      var time = new Date().getTime();
 		      pushAll(x,y,time,true);
 		      drawPoint(data.count);
+		      setPositionMess();
 		    }
 		  }, false);
 		  canvas.addEventListener("mouseout", function() {

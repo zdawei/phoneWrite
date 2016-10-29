@@ -37,28 +37,37 @@ body>button{
 }
 img[src="img/model.png"]{
 	display:none;
-}
-**************follow's index.html************************************
+}*/
+/***************follow's index.html*************************************/
 #tip{
 	width:100%;
 	min-width: 103px;
 	height: 25px;
 	position: absolute;
-	top:16%;
+	top:68px;
 	right:0%;
 	background-color: rgba(200,200,200,0.7);
 }
-#tip>p{
+#position{
+	width:100%;
+	min-width: 103px;
+	height: 25px;
+	position: absolute;
+	top:93px;
+	right:0%;
+	background-color: rgba(200,200,200,0.7);
+}
+#tip>p,#position>p{
 	padding: 0;
 	margin: 0;
 	text-align: center;
 }
-/**************follow's second.html*************************/
-#secWriting{
+/**************follow's second.html************************
+/*#secWriting{
 	width: 100%;
 	height:90%;
 	clear:both;
-}
+}*/
 /*.setChar>form>input{
 	display: block;
-}*/*/
+}*/

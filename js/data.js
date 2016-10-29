@@ -23,7 +23,7 @@ define(['jquery'], function($) {
     	widthFunc : 'gaussian',//处理宽度函数的初始值
     	curve : '1 order Bézier'
 	};
-	var account = 0;
+	var account = 0, totalChar = 15;
 
 	return function() {
 		var that = {
@@ -40,18 +40,20 @@ define(['jquery'], function($) {
 			},
 
 			push : function() {
+				if(account >= totalChar || account < 0) {return ;}
 				datas[account] = $.extend(true, {}, data);
 				that.clear();
 			},
 
 			next : function() {
+				if(++account >= totalChar) {account = totalChar - 1;alert('已经是最后一个汉字了！');}
 				that.clear();
-				data = datas[++account] || data;
+				data = datas[account] || data;
 				return data;
 			},
 
 			pre : function() {
-				if(--account < 0) {account = 0;}
+				if(--account < 0) {account = 0;alert('已经是第一个汉字了！');}
 				that.clear();				
 				data = datas[account] || data;
 				return data;
@@ -72,6 +74,14 @@ define(['jquery'], function($) {
 
 			getDatasLength : function() {
 				return datas.length;
+			},
+
+			getCharsAccount : function() {
+				return account;
+			},
+
+			getTotalChar : function() {
+				return totalChar;
 			},
 
 			pop : function(pos) {
