@@ -265,8 +265,8 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		    if($('#position').length) {
 		    	clearTimeout(opts.setPosMess);
 		    	var noMess = '没有坐标信息！';
-		    	var mess = ' x:' + data.x[data.count -1] + 
-		    			   ' y:' + data.y[data.count - 1] + 
+		    	var mess = ' x:' + data.x[data.count -1].toFixed(0) + 
+		    			   ' y:' + data.y[data.count - 1].toFixed(0) + 
 		    			   ' speed:' + data.speed[data.count - 1].toFixed(5) +
 		    			   ' pressure:' + data.pressure[data.count - 1].toFixed(5);
 		    	$('#position p').text(mess);
