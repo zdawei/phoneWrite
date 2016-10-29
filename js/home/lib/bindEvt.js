@@ -130,13 +130,35 @@ define(['jquery', 'lib/writing'], function($, w) {
 				}
 			},
 
+			formProcess : function(idStr) {
+				var paramNode = $('#widthParam');
+				switch(idStr) {
+					case 'gaussian' : paramNode.html('<p>gaoss<input name = \"gaoss\"  type = \"range\" max = \"2.0\"  min = \"1.0\"  step = \"0.1\" value = \"1.3\"  /></p>'); break;
+					case 'sigmoid' : paramNode.html('<p>sigmoid<input name = \"sigmoid\"  type = \"range\" max = \"10.0\"  min = \"1.0\"  step = \"1\" value = \"3\"  /></p>'); break;
+					case 'cos' : paramNode.html('<p>cos<input name = \"cos\"  type = \"range\" max = \"2.0\"  min = \"0.1\"  step = \"0.1\" value = \"1\"  /></p>'); break;
+					case 'acceleration' : paramNode.html('<p>acceleration<input name = \"acceleration\"  type = \"range\" max = \"10.0\"  min = \"0.1\"  step = \"0.1\" value = \"0.5\"  /></p>'); break;
+				}
+			},
+
 			formFunc : function() {
-				var form0 = document.forms[0];
-				form0.addEventListener("change",function(e) {
+				var forms = document.forms;
+				forms[0].addEventListener("click",function(e) {
+					switch($(e.target).text()) {
+						case "time" : write.animation(true);break;
+						case "normal" : write.animation(false);break;
+					}
+				},false);				
+				forms[1].addEventListener("click",function(e) {
+					switch($(e.target).text()) {
+						case "pressure" : write.drawFrameWork(true);break;
+						case "normal" : write.drawFrameWork(false);break;
+					}
+				},false);				
+				forms[2].addEventListener("change",function(e) {
 					write.setArg(e.target.name,e.target.value, true);
 				},false);
-				var form1 = document.forms[1];
-				form1.addEventListener("click",function(e) {
+				forms[3].addEventListener("click",function(e) {
+					fn.formProcess($(e.target).text());
 					write.setArg('widthFunc', $(e.target).text(), false);
 				},false);
 			},
@@ -180,13 +202,12 @@ define(['jquery', 'lib/writing'], function($, w) {
 			$('.bindEvt').on('click', function(evt) {
 				switch($(evt.target).attr('id')) {
 					case "xmlcharacter" : fn.xmlcharacterLocal();break;
-					case "animation" : fn.animation();break;
-					case "framework" : fn.framework();break;
+					// case "animation" : fn.animation();break;
+					// case "framework" : fn.framework();break;
 					case "prechars" : fn.preChar();break;
 					case "btnClear" : fn.clearPrint();break;
 					case "nextchars" : fn.nextChar();break;
 					case "setChar" : fn.setChar();break;
-					// case "setChar" : fn.setChar();break;
 				}
 			});
 		};

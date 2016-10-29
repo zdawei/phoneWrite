@@ -124,17 +124,28 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		  }
   		}
 
-		var drawFrameWork = function() {
+		var drawFrameWork = function(boolen) {
 			clearScreen();
 			ctx.beginPath();
 			for(var r = 0 ; r < data.count ; r++) {
-			  if(data.locks[r]){
-			    var distant = Math.max(parseInt(data.pressure[r] * 60) , 5);
-			    ctx.moveTo(data.x[r - 1],data.y[r - 1]);
-			    ctx.lineTo(data.x[r],data.y[r]);
-			    ctx.moveTo(data.x[r] + distant - 2,data.y[r] + distant - 2);
-			    ctx.arc(data.x[r],data.y[r],distant,0,2 * Math.PI,false);
-			  }
+				if(data.locks[r]) {
+					var distant = Math.max(parseInt(data.pressure[r] * 60) , 5);
+					ctx.moveTo(data.x[r - 1],data.y[r - 1]);
+					ctx.lineTo(data.x[r],data.y[r]);
+					ctx.lineWidth = 1;
+					boolen ? ctx.moveTo(data.x[r] + distant - 2,data.y[r] + distant - 2) :
+							 ctx.moveTo(data.x[r] + 5 - 2,data.y[r] + 5 - 2);
+					boolen ? ctx.arc(data.x[r],data.y[r],distant,0,2 * Math.PI,false) : 
+							 ctx.arc(data.x[r],data.y[r],5,0,2 * Math.PI,false);
+  				} else {
+  					var distant = Math.max(parseInt(data.pressure[r] * 60) , 5);
+  					ctx.moveTo(data.x[r],data.y[r]);
+  					ctx.lineWidth = 1;
+					boolen ? ctx.moveTo(data.x[r] + distant - 2,data.y[r] + distant - 2) :
+							 ctx.moveTo(data.x[r] + 5 - 2,data.y[r] + 5 - 2);
+					boolen ? ctx.arc(data.x[r],data.y[r],distant,0,2 * Math.PI,false) : 
+							 ctx.arc(data.x[r],data.y[r],5,0,2 * Math.PI,false);  					
+  				}
 			}
 			ctx.stroke();
 		};
@@ -155,27 +166,35 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			data && data.count && drawPointAll();
   		}
 
-		var animation = function() {
+		var animation = function(boolen) {
 		  //动画写字函数
 		  clearScreen();
 		  var count = 0;
-		  // var handle = setInterval(function(){
-		  //   if(count++ >= $.count){
-		  //     clearInterval(handle);
-		  //   }
-		  //   reWrite(count);
-		  // },17);
-		  var time = data.time[count + 1] - data.time[count];
-		  var animfunc = function() {
-		    if(count++ >= data.count) {
-		      clearTimeout(handle);
-		    } else {
-		      drawPoint(count);
-		      time = data.time[count + 1] - data.time[count];
-		      setTimeout(animfunc, time); 
-		    }
+		  if(boolen) {
+			  var time = data.time[count + 1] - data.time[count];
+			  var animfunc = function() {
+			    if(count++ >= data.count) {
+			      	clearTimeout(handle);
+			    } else {
+			      	drawPoint(count);
+			      	if(data.locks[count + 1]) {
+			      		time = data.time[count + 1] - data.time[count];
+			      	} else {
+			      		count++;
+			      		time = data.time[count + 1] - data.time[count];
+			      	}
+			    	setTimeout(animfunc, time); 
+			    }
+			  }
+			  var handle = setTimeout(animfunc, time);
+		  } else {
+			var handle = setInterval(function() {
+				if(count++ >= data.count) {
+				  clearInterval(handle);
+				}
+				drawPoint(count);
+			},17);
 		  }
-		  var handle = setTimeout(animfunc, time);
 		};
 
 		function clearPrint() {
@@ -263,11 +282,11 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		var that = {
 			init : init,
 			pushAll : pushAll,
-			drawPoint : drawPoint,
 			drawFrameWork : drawFrameWork,
 			animation : animation,
 			nextChar : nextChar,
 			preChar : preChar,
+			drawPoint : drawPoint,
 			drawPointAll : drawPointAll,
 			setArg : setArg,
 			setChar : setChar,

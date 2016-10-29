@@ -11,7 +11,6 @@ define(['jquery'], function($) {
   		speed : [],//速度
   		pressure : [],//压力
     	//参数设置
-    	widthFunc : 'gaussian',//处理宽度函数的初始值
   		gaoss : 1.3,//高斯初始值
   		sigmoid : 3,//sigmoid初始值
   		cos : 1,//余弦初始值
@@ -20,10 +19,9 @@ define(['jquery'], function($) {
   		maxPress : 0.2,
   		width : 50,
     	density : 0.5,
-    	//增加了draw函数后的参数
-    	draw_wmin : 3.0,
-    	draw_wmax : 11,
-    	draw_sigmoid : 0.3
+    	// 宽度，曲线处理初始值
+    	widthFunc : 'gaussian',//处理宽度函数的初始值
+    	curve : '1 order Bézier'
 	};
 	var account = 0;
 
