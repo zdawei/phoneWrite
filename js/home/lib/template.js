@@ -77,9 +77,39 @@ define(['bootstrap'], {
 									'<form role="menu" class="dropdown-menu" style="left:-68px;width:100%;opacity:0.8">'+
 										'<ul class="list-group">'+
 											'<li class="list-group-item"><a href="javascript:void(0);">1 order Bézier</a></li>'+
-											'<li class="list-group-item"><a href="javascript:void(0);">2 order Bézier</a></li>'+
+											// '<li class="list-group-item"><a href="javascript:void(0);">2 order Bézier</a></li>'+
 											'<li class="list-group-item"><a href="javascript:void(0);">3 order Bézier</a></li>'+
 										'</ul>								'+
+									'</form>'+
+								'</div>'+
+							'</div>'+
+						'</div>'+
+					'</div>'+
+					'<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding:0">'+
+ 						'<div class="btn-toolbar" role="toolbar">'+
+ 							'<div class="btn-group">'+
+								'<button  id = "strokeAnalysis" class =  "btn btn-default" type = "button"  title = "笔画分析">笔画</button>'+
+								'<button  id = "charMessage" class =  "btn btn-default" type = "button"  title = "二维图信息">二维信息</button>'+
+								'<button  id = "revertChar" class =  "btn btn-default" type = "button"  title = "撤销笔画">撤销</button>'+
+								'<button  id = "reload" class =  "btn btn-default" type = "button"  title = "重置笔画">重置</button>'+
+								'<button  id = "writeChar" class =  "btn btn-default" type = "button"  title = "重置笔画">写字</button>'+
+								'<div class="dropdown" style="display:inline-block">'+
+									'<button  id = "color" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title = "颜色">'+
+									'	颜色 <span class="caret"></span>'+
+									'</button>'+
+									'<form role="menu" class="dropdown-menu" style="left:-68px;width:100%;opacity:0.8">'+
+										'<ul class="list-group">'+
+											'<li class="list-group-item"><a href="javascript:void(0);">black</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">blue</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">green</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">purple</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">red</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">yellow</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">qing</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">gray1</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">gray2</a></li>'+
+											'<li class="list-group-item"><a href="javascript:void(0);">gray3</a></li>'+
+										'</ul>'+
 									'</form>'+
 								'</div>'+
 							'</div>'+
@@ -88,6 +118,7 @@ define(['bootstrap'], {
  				'</div>'+
 			'</div>'+
 			'<div id = "tip"><p>当前没写汉字！</p></div>'+
-			'<div id = "position"><p>没有坐标信息！</p></div>'+
+			'<div id = "position"><p>当前没有坐标信息！</p></div>'+
+			'<div id = "whichCanvas"><p>写字</p></div>'+
 			'<canvas id="writing"></canvas>'
 });

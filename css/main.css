@@ -44,7 +44,7 @@ img[src="img/model.png"]{
 	min-width: 103px;
 	height: 25px;
 	position: absolute;
-	top:68px;
+	top:102px;
 	right:0%;
 	background-color: rgba(200,200,200,0.7);
 }
@@ -53,11 +53,20 @@ img[src="img/model.png"]{
 	min-width: 103px;
 	height: 25px;
 	position: absolute;
-	top:93px;
+	top:127px;
 	right:0%;
 	background-color: rgba(200,200,200,0.7);
 }
-#tip>p,#position>p{
+#whichCanvas{
+	width:5%;
+	min-width: 103px;
+	height: 25px;
+	position: absolute;
+	top:152px;
+	right:0%;
+	background-color: rgba(200,200,200,0.7);
+}
+#tip>p,#position>p,#whichCanvas>p{
 	padding: 0;
 	margin: 0;
 	text-align: center;

@@ -5,7 +5,7 @@ define(['jquery', 'homeLib/template', 'homeLib/setcanvas', 'homeLib/bindEvt'], f
 	
 	return function() {
 		var image = new Image();
-		image.src = "img/model.png";//笔刷模型
+		image.src = "img/model-black.png";//笔刷模型
 		var canvas = $('#writing')[0];
 
 		var init = function() {

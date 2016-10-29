@@ -7,7 +7,13 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		var ctx = canvas.getContext("2d");
 		var data = $data.getData();
 		var opts = {
-			setPosMess : null
+			setPosMess : null,
+			threeCurve : 0,
+			isWriteOpen : true
+		};
+
+		var changeColorModel = function(color) {
+			image.src = "img/model-" + color + ".png";//笔刷模型
 		};
 
 		var gaussian = function(v, gauss) {
@@ -127,7 +133,125 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		  }
   		}
 
+		var threeDraw = function(count) { 
+			if(!data.locks[count - 2] || count < 3) {return ;}
+			// 三次贝塞尔曲线
+			var d1, sampleNumber;
+			var tempX,tempY,tempW;
+			var c_a = 4;
+			var x1,x2,x3,x4,
+				y1,y2,y3,y4,
+				w1,w2,w3,w4;
+			//三次贝塞尔曲线的控制点
+			var a2,a3,b2,b3;
+			d1 = data.distance[count - 1];
+			sampleNumber = parseInt(d1 / data.density);
+
+			x2 = data.x[count - 3];
+			x3 = data.x[count - 2];
+			x4 = data.x[count - 1];
+			
+			y2 = data.y[count - 3];
+			y3 = data.y[count - 2];
+			y4 = data.y[count - 1];
+              
+			v2 = data.speed[count - 3];
+			v3 = data.speed[count - 2];
+			v4 = data.speed[count - 1];
+
+      		w1 = data.pressure[count - 4];
+			w2 = data.pressure[count - 3];
+			w3 = data.pressure[count - 2];
+			w4 = data.pressure[count - 1];
+
+			var dis23 = data.distance[count - 2];
+			var dis34 = d1;
+			var dis24 = Math.sqrt( (x4-x2) * (x4-x2) + (y4-y2)*(y4-y2));
+
+			if(count == 3) {       
+				var disAvg = dis23 / (3.0 * dis24); 
+			  	b2 = {
+				    x: x3 - disAvg * (x4 - x2),
+				    y: y3 - disAvg * (y4 - y2),
+				    v: v3 - (v4 - v2) / 6,
+			    	w: w3 - (w4 - w2) / 6 
+			    };
+			    a2 = {
+				    x: b2.x - (x3 - x2) / 3,
+				    y: b2.y - (y3 - y2) / 3,
+				    v: b2.v - (v3 - v2) / 3,
+				    w: b2.w - (w3 - w2) / 3
+			    };
+			} else {
+				x1 = data.x[count - 4];
+				y1 = data.y[count - 4];
+				v1 = data.speed[count - 4];
+				w1 = data.pressure[count - 4]; 
+				var dis13 = Math.sqrt( (x3-x1) * (x3-x1) + (y3-y1)*(y3-y1));
+				var dis12 = Math.sqrt( (x2-x1) * (x2-x1) + (y2-y1)*(y2-y1));
+				var disAvg = dis23/(3.0 * dis13); 
+				var factor = 1/6;          
+				a2 = {
+					    x: x2 + disAvg *(x3-x1) ,
+					    y: y2 + disAvg *(y3-y1),
+					    w: w2 + (w3-w1) * factor,
+					    v: v2 + (v3-v1) * factor
+				    };
+				disAvg = dis34/(3.0 * dis24);
+			    b2 = {
+				    x: x3 - disAvg *(x4-x2),
+				    y: y3 - disAvg *(y4-y2),
+				    w: w3 - (w4-w2) * factor,
+				    v: v3 - (v4-v2) * factor
+    			};
+				var perpA = ((x3-x1)*(x3-x2) + (y3-y1)*(y3-y2))/(dis23 * dis13); //cosine of the angle
+				var perpB = ((x2-x4)*(x2-x3) + (y2-y4)*(y2-y3))/(dis23 * dis24);
+				if( perpA > perpB ) {
+					perpA = (dis23/3) * Math.sqrt(1 - perpA * perpA);
+					perpA = perpA /  Math.sqrt(1 - perpB * perpB);
+					b2.x = x3 - perpA *(x4-x2)/dis24;
+					b2.y = y3 - perpA *(y4-y2)/dis24;
+				}else{
+					//sine value                      
+					perpB = (dis23/3) * Math.sqrt(1 - perpB * perpB);
+					perpB = perpB /  Math.sqrt(1 - perpA * perpA);
+					a2.x = x2 + perpA *(x3-x1)/dis13;
+					a2.y = y2 + perpA *(y3-y1)/dis13;
+      			}
+	        }
+			for(var u=0; u<sampleNumber; u++) {
+				var t = u/(sampleNumber-1);
+				tempX = (1-t)*(1-t)*(1-t)*x2
+								+t*(1-t)*(1-t)*3*a2.x
+								+t*t*(1-t)*3*b2.x
+								+t*t*t*x3;
+				tempY = (1-t)*(1-t)*(1-t)*y2
+								+t*(1-t)*(1-t)*3*a2.y
+								+t*t*(1-t)*3*b2.y
+								+t*t*t*y3;
+				tempW = (1-t)*(1-t)*(1-t)*w2
+				 				+t*(1-t)*(1-t)*3*a2.w
+			     				+t*t*(1-t)*3*b2.w
+				 				+t*t*t*w3;
+ 				tempW = Math.min(Math.max(tempW, data.minPress), data.maxPress);
+ 				opts.threeCurve && (tempW = (tempW + opts.threeCurve) / 2);
+				ctx.drawImage(image,tempX-tempW,tempY-tempW, data.width*2*tempW,data.width*2*tempW);
+ 				opts.threeCurve = tempW
+			}
+		};
+
+		function threeCurve(boolen, count) {
+			if(boolen) {
+				threeDraw(count);
+			} else {
+	  		  for(var r = 0;r < data.count;r++) {
+  		    	threeDraw(r);
+	  		  }
+			}
+		}
+
 		var drawFrameWork = function(boolen) {
+			writeOpen(false);
 			clearScreen();
 			ctx.beginPath();
 			for(var r = 0 ; r < data.count ; r++) {
@@ -153,6 +277,14 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			ctx.stroke();
 		};
 
+		function setDraw(boolen, count) {
+			switch(data.curve) {
+				case '1 order Bézier' : boolen ? drawPoint(count) : drawPointAll(); break;
+				case '2 order Bézier' : break;
+				case '3 order Bézier' : boolen ? threeCurve(boolen, count) : threeCurve(boolen);break;
+			}
+		}
+
 		function setCountChar() {
   			//设置汉字提示符
   			if(!$('#tip').length) {return ;}
@@ -172,7 +304,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			$data.push();
 			clearPrint();
 			data = $data.next();
-			data && data.count && drawPointAll();
+			data && data.count && setDraw(false);
 			setCountChar();
 		};
 
@@ -181,12 +313,13 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			$data.push();
 			clearPrint();
 			data = $data.pre();
-			data && data.count && drawPointAll();
+			data && data.count && setDraw(false);
 			setCountChar();
   		}
 
 		var animation = function(boolen) {
 		  //动画写字函数
+		  writeOpen(false);
 		  clearScreen();
 		  var count = 0;
 		  if(boolen) {
@@ -195,7 +328,8 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			    if(count++ >= data.count) {
 			      	clearTimeout(handle);
 			    } else {
-			      	drawPoint(count);
+			      	// drawPoint(count);
+			      	setDraw(true, count);
 			      	if(data.locks[count + 1]) {
 			      		time = data.time[count + 1] - data.time[count];
 			      	} else {
@@ -211,13 +345,14 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 				if(count++ >= data.count) {
 				  clearInterval(handle);
 				}
-				drawPoint(count);
+				setDraw(true, count);
 			},17);
 		  }
 		};
 
 		function clearPrint() {
   		//清除画板，清空对象
+  			if(!opts.isWriteOpen) {return;}
 			$data.clear();  		  
   			ctx.clearRect(0,0,canvas.width,canvas.height);
   			s.qt(ctx);
@@ -229,15 +364,17 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			s.qt(ctx);
   		}
 
-		function setArg(name,value, boolen) {
+		function setArg(name,value, boolen, opt) {
 		  //这个是通过滑动条设置参数的
 		  // boolen是用来判断是从宽度函数过来的还是从参数过来的,最后判断是否应该转换为数字
+		  if(name == 'curve') {data[name] = value; data['density'] = 0.2;clearScreen();setDraw(boolen, opt); return ;}
+		  if(name == 'color') {changeColorModel(value);image.onload = function(){clearScreen();setDraw(boolen);}; return ;}
 		  data[name] = boolen ? parseFloat(value) : value;
 		  var original = cloneCharData(data);
 		  clearPrint();
 		  for(var i = 0 ; i < original.count ; i++) {
 		    pushAll(original.x[i],original.y[i],original.time[i],original.locks[i]);
-		    drawPoint(i);
+		    setDraw(true, i);
 		  }
 		  original = null;
 		}
@@ -264,7 +401,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		function setPositionMess() {
 		    if($('#position').length) {
 		    	clearTimeout(opts.setPosMess);
-		    	var noMess = '没有坐标信息！';
+		    	var noMess = '当前没有坐标信息！';
 		    	var mess = ' x:' + data.x[data.count -1].toFixed(0) + 
 		    			   ' y:' + data.y[data.count - 1].toFixed(0) + 
 		    			   ' speed:' + data.speed[data.count - 1].toFixed(5) +
@@ -276,42 +413,170 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		    }
   		}
 
-		var writeOpen = function() {
+  		function revertChar() {
+  			if(data.count == 0 || !opts.isWriteOpen) {return ;}
+  			for(var i = data.count - 1; data.locks[i] && i >= 0; i--) {
+  				data.x.pop();
+  				data.y.pop();
+  				data.time.pop();
+  				data.locks.pop();
+  				data.distance.pop();
+  				data.speed.pop();
+  				data.pressure.pop();
+    			data.count--;
+  			}
+			data.x.pop();
+			data.y.pop();
+			data.time.pop();
+			data.locks.pop();
+			data.distance.pop();
+			data.speed.pop();
+			data.pressure.pop();
+			data.count--;
+			clearScreen();
+			setDraw(false);
+  		}
+
+  		function strokeAnalysis() {
+  			writeOpen(false);
+  			var colors = ['black','blue','green','purple','red','yellow','qing','gray1','gray2','gray3'];
+  			var count = 0 , i = 0;
+  			clearScreen();
+  			var process = function() {
+  				i++;
+	  			for(;i < data.count && data.locks[i]; i++) {
+	  					setDraw(true, i);
+	  			}
+	  			if(i < data.count) {
+	  				preProcess();
+	  			} else {
+	  				changeColorModel(colors[0]);
+	  				return ;
+	  			}
+  			};
+  			var preProcess = function() {
+  				if(i >= data.count) {changeColorModel(colors[0]);return;}
+				changeColorModel(colors[count++ % colors.length]);
+				image.onload = function() {
+					process();
+				}
+  			};
+  			preProcess();
+  		}
+
+  		function charMessage() {
+  			var ctx = canvas.getContext('2d');
+  			ctx.clearRect(0,0,canvas.width,canvas.height);
+  			writeOpen(false);
+  			ctx.beginPath();
+  			ctx.moveTo(20,100);
+  			ctx.lineTo(20, canvas.height - 100);
+  			ctx.moveTo(20, canvas.height - 200);
+  			ctx.lineTo(canvas.width - 20, canvas.height - 200);
+  			ctx.lineWidth = 1;
+  			ctx.stroke();
+  			var canvasWidth = canvas.width - 20 - 20;
+  			var canvasHeight = canvas.height - 200 - 100;
+  			var maxPressure = Math.max.apply(Math, data.pressure);
+  			var minPressure = Math.min.apply(Math, data.pressure);
+  			var pressureGap = maxPressure - minPressure;
+  			var maxSpeed = Math.max.apply(Math, data.speed);
+  			var minSpeed = Math.min.apply(Math, data.speed);
+  			var speedGap = maxSpeed - minSpeed;
+  			var canvasGap = canvasWidth / data.count;
+  			var pressureX = [], pressureY = [], speedX = [], speedY = [];
+  			for(var i = 0; i < data.count; i++) {
+  				pressureY[i] = canvasWidth / pressureGap * data.pressure[i] - minPressure + (canvas.height - 630);
+  				pressureX[i] = i * canvasGap + 20;
+  				speedY[i] = canvasWidth / speedGap * data.speed[i] - minSpeed + (canvas.height - 200);
+  				speedY[i] -= (speedY[i] - canvas.height + 200) * 2;
+  				speedX[i] = i * canvasGap + 20;
+  				if(i > 0) {
+  					ctx.beginPath();
+  					ctx.moveTo(pressureX[i - 1], pressureY[i - 1]);
+  					ctx.lineTo(pressureX[i], pressureY[i]);
+  					ctx.lineWidth = 2;
+  					ctx.strokeStyle = "blue";
+  					ctx.stroke();
+  					ctx.beginPath();
+  					ctx.moveTo(speedX[i - 1], speedY[i - 1]);
+  					ctx.lineTo(speedX[i], speedY[i]);
+  					ctx.lineWidth = 1;
+  					ctx.strokeStyle = "red";
+  					ctx.stroke();
+  				}
+  			}
+
+  			ctx.fillText("红线：速度",canvas.width - 100, canvas.height - 100);
+  			ctx.fillText("蓝线：压力",canvas.width - 100, canvas.height - 120);
+  		}
+
+  		function writeChar() {
+  			if(!opts.isWriteOpen) {
+  				clearScreen();
+  				writeOpen(true);
+  				setDraw(false);
+  			}
+  		}
+
+  		var canvasEvt = {
+
+			lock : false,
+
+			touch : ("ontouchstart" in document),
+
+  			StartEvent : function(e) {
+			    var t = canvasEvt.touch ? e.touches[0] : e;
+			    var x = t.pageX - t.target.offsetLeft;
+			    var y = t.pageY - t.target.offsetTop;
+			    var time = new Date().getTime();
+			    pushAll(x,y,time,false);
+			    canvasEvt.lock = true;
+  			},
+
+  			MoveEvent : function(e) {
+			    if(canvasEvt.lock){
+			      var t = canvasEvt.touch ? e.touches[0] : e;
+			      var x = t.pageX - t.target.offsetLeft;
+			      var y = t.pageY - t.target.offsetTop;
+			      var time = new Date().getTime();
+			      pushAll(x,y,time,true);
+			      setDraw(true, data.count);
+			      setPositionMess();
+			    }
+  			},
+
+  			mouseout : function(e) {
+		    	canvasEvt.lock = false;
+  			},
+
+  			EndEvent : function(e) {
+		    	canvasEvt.lock = false;
+  			}
+  		}
+
+		var writeOpen = function(boolen) {
 		  //canvas上书写的事件绑定函数
+		  opts.isWriteOpen = boolen;
 		  var touch = ("ontouchstart" in document);
 		  var StartEvent = touch ? "touchstart" : "mousedown";
 		  var MoveEvent = touch ? "touchmove" : "mousemove";
 		  var EndEvent = touch ? "touchend" : "mouseup";
-		  var lock = false;
-		  canvas.addEventListener(StartEvent, function(e) {
-		    var t = touch ? e.touches[0] : e;
-		    var x = t.pageX - t.target.offsetLeft;
-		    var y = t.pageY - t.target.offsetTop;
-		    var time = new Date().getTime();
-		    pushAll(x,y,time,false);
-		    lock = true;
-		  }, false);
-		  canvas.addEventListener(MoveEvent, function(e) {
-		    if(lock){
-		      var t = touch ? e.touches[0] : e;
-		      var x = t.pageX - t.target.offsetLeft;
-		      var y = t.pageY - t.target.offsetTop;
-		      var time = new Date().getTime();
-		      pushAll(x,y,time,true);
-		      drawPoint(data.count);
-		      setPositionMess();
-		    }
-		  }, false);
-		  canvas.addEventListener("mouseout", function() {
-		    lock = false;
-		  }, false);
-		  canvas.addEventListener(EndEvent, function(e) {
-		    lock = false;
-		  }, false);
+		  if(boolen) {
+			  canvas.addEventListener(StartEvent, canvasEvt.StartEvent, false);
+			  canvas.addEventListener(MoveEvent, canvasEvt.MoveEvent, false);
+			  canvas.addEventListener("mouseout", canvasEvt.mouseout, false);
+			  canvas.addEventListener(EndEvent, canvasEvt.EndEvent, false);
+		  } else {
+			  canvas.removeEventListener(StartEvent, canvasEvt.StartEvent, false);
+			  canvas.removeEventListener(MoveEvent, canvasEvt.MoveEvent, false);
+			  canvas.removeEventListener("mouseout", canvasEvt.mouseout, false);
+			  canvas.removeEventListener(EndEvent, canvasEvt.EndEvent, false);
+		  }
 		};
 
 		var init = function() {
-			writeOpen();
+			writeOpen(true);
 		};
 
 		var that = {
@@ -321,10 +586,13 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			animation : animation,
 			nextChar : nextChar,
 			preChar : preChar,
-			drawPoint : drawPoint,
-			drawPointAll : drawPointAll,
+			setDraw : setDraw,
 			setArg : setArg,
 			setChar : setChar,
+			revertChar : revertChar,
+			strokeAnalysis : strokeAnalysis,
+			charMessage : charMessage,
+			writeChar : writeChar,
 			clearPrint : clearPrint,
 			clearScreen : clearScreen
 		};

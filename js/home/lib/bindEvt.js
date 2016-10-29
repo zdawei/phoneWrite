@@ -125,7 +125,31 @@ define(['jquery', 'lib/writing'], function($, w) {
 						},500);
 						// drawPoint (docXML);
 						write.clearScreen();
-						write.drawPointAll();
+						write.setDraw(false);
+					},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
+				}
+			},
+
+			outlinecharacterLocal : function() {
+				var char = prompt("请输入一个汉字","张");
+				if(!char) return ;
+				if(!char.length || char.length > 1){alert("输入有误!"); return arguments.callee();}
+				var path = "data\/datajs\/datajs\/"+char+".js";
+				// var path = "http://202.112.195.243/canvas/phoneWrite/datajs/"+char+".js";
+				// var docXML = loadXML(path);
+				fn.loadJsonp(path);
+				script.onload = function() {
+					setTimeout(function() {
+						if("undefined" == typeof data) {alert("输入有误!");return ;}
+						fn.changeXY(data, {
+							charBoxWidth : canvas.width ,
+							charRatio : 0.85 ,
+							aspectRatio : 4 / 3 ,
+							startPosition : {x : 0 , y : 0}
+						},500);
+						// drawPoint (docXML);
+						write.clearScreen();
+						write.setDraw(false);
 					},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
 				}
 			},
@@ -161,11 +185,17 @@ define(['jquery', 'lib/writing'], function($, w) {
 					fn.formProcess($(e.target).text());
 					write.setArg('widthFunc', $(e.target).text(), false);
 				},false);
+				forms[4].addEventListener("click",function(e) {
+					write.setArg('curve', $(e.target).text(), false);
+				},false);
+				forms[5].addEventListener("click",function(e) {
+					write.setArg('color', $(e.target).text(), false);
+				},false);
 			},
 
 			animation : function() {
   			  //动画写字函数
-  				write.animation();
+  				$('#whichCanvas p').text('动画');
   			},
 
   			clearPrint : function() {
@@ -174,6 +204,7 @@ define(['jquery', 'lib/writing'], function($, w) {
 
 			framework : function() {
 			  //顶导的笔画框架
+			  	$('#whichCanvas p').text('框架');
 				write.drawFrameWork();
 			},
 
@@ -189,6 +220,29 @@ define(['jquery', 'lib/writing'], function($, w) {
   				if(write.setChar()) {
 					var w = window.open("second.html","_self");
   				}
+  			},
+
+  			reload : function() {
+  				location.reload();
+  			},
+
+  			revertChar : function() {
+  				write.revertChar();
+  			},
+
+  			strokeAnalysis : function() {
+  				$('#whichCanvas p').text('笔画');
+  				write.strokeAnalysis();
+  			},
+
+  			charMessage : function() {
+  				$('#whichCanvas p').text('二维信息');
+  				write.charMessage();
+  			},
+
+  			writeChar : function() {
+  				$('#whichCanvas p').text('写字');
+  				write.writeChar();
   			}
 
 		};
@@ -202,12 +256,17 @@ define(['jquery', 'lib/writing'], function($, w) {
 			$('.bindEvt').on('click', function(evt) {
 				switch($(evt.target).attr('id')) {
 					case "xmlcharacter" : fn.xmlcharacterLocal();break;
-					// case "animation" : fn.animation();break;
-					// case "framework" : fn.framework();break;
 					case "prechars" : fn.preChar();break;
 					case "btnClear" : fn.clearPrint();break;
 					case "nextchars" : fn.nextChar();break;
 					case "setChar" : fn.setChar();break;
+					case "reload" : fn.reload();break;
+					case "revertChar" : fn.revertChar();break;
+					case "strokeAnalysis" : fn.strokeAnalysis();break;
+					case "charMessage" : fn.charMessage();break;
+					case "writeChar" : fn.writeChar();break;
+					case "animation" : fn.animation();break;
+					case "framework" : fn.framework();break;
 				}
 			});
 		};
