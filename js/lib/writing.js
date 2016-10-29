@@ -6,10 +6,22 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 		var ctx = canvas.getContext("2d");
 		var data = $data.getData();
+		var charMess = {
+			curve : '1 order Bézier',
+	  		gaoss : 1.3,//高斯初始值
+	  		sigmoid : 3,//sigmoid初始值
+	  		cos : 1,//余弦初始值
+	    	acceleration : 0.5,
+	  		minPress : 0.05,
+	  		maxPress : 0.2,
+	  		width : 50,
+	    	density : 0.5,
+	    	widthFunc : 'gaussian'
+		};
 		var opts = {
 			setPosMess : null,
 			threeCurve : 0,
-			isWriteOpen : true
+			isWriteOpen : true,
 		};
 
 		var changeColorModel = function(color) {
@@ -84,7 +96,7 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			}
 		};
 
-		function pushAll(x,y,time,lock, widthValue) {
+		function pushAll(x,y,time,lock) {
 		  //只提供x,y,time,lock自动计算所有参数，并全部压入
 		  data.x.push(x);
 		  data.y.push(y);
@@ -304,6 +316,9 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			$data.push();
 			clearPrint();
 			data = $data.next();
+			for(var key in charMess) {
+				data[key] = charMess[key];
+			}
 			data && data.count && setDraw(false);
 			setCountChar();
 		};
@@ -313,6 +328,9 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			$data.push();
 			clearPrint();
 			data = $data.pre();
+			for(var key in charMess) {
+				data[key] = charMess[key];
+			}
 			data && data.count && setDraw(false);
 			setCountChar();
   		}
@@ -367,9 +385,17 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		function setArg(name,value, boolen, opt) {
 		  //这个是通过滑动条设置参数的
 		  // boolen是用来判断是从宽度函数过来的还是从参数过来的,最后判断是否应该转换为数字
-		  if(name == 'curve') {data[name] = value; data['density'] = 0.2;clearScreen();setDraw(boolen, opt); return ;}
+		  if(name == 'curve') {
+		  	data[name] = value; 
+		  	charMess.curve = value;
+		  	data['density'] = 0.2;
+		  	clearScreen();
+		  	setDraw(boolen, opt); 
+		  	return ;
+		  }
 		  if(name == 'color') {changeColorModel(value);image.onload = function(){clearScreen();setDraw(boolen);}; return ;}
 		  data[name] = boolen ? parseFloat(value) : value;
+		  charMess[name] = boolen ? parseFloat(value) : value;
 		  var original = cloneCharData(data);
 		  clearPrint();
 		  for(var i = 0 ; i < original.count ; i++) {
@@ -466,17 +492,20 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
   		function charMessage() {
   			var ctx = canvas.getContext('2d');
+  			var totalHeightUp = canvas.height - 100;
+  			var totalHeightDown = 100;
+  			var totalWidthUp = canvas.width - 20;
+  			var totalWidthDown = 20;
   			ctx.clearRect(0,0,canvas.width,canvas.height);
   			writeOpen(false);
   			ctx.beginPath();
-  			ctx.moveTo(20,100);
-  			ctx.lineTo(20, canvas.height - 100);
-  			ctx.moveTo(20, canvas.height - 200);
-  			ctx.lineTo(canvas.width - 20, canvas.height - 200);
+  			ctx.moveTo(totalWidthDown, totalHeightDown);
+  			ctx.lineTo(totalWidthDown, totalHeightUp);
+  			ctx.lineTo(totalWidthUp, totalHeightUp);
   			ctx.lineWidth = 1;
   			ctx.stroke();
-  			var canvasWidth = canvas.width - 20 - 20;
-  			var canvasHeight = canvas.height - 200 - 100;
+  			var canvasWidth = totalWidthUp - totalWidthDown;
+  			var canvasHeight = totalHeightUp - totalHeightDown;
   			var maxPressure = Math.max.apply(Math, data.pressure);
   			var minPressure = Math.min.apply(Math, data.pressure);
   			var pressureGap = maxPressure - minPressure;
@@ -486,11 +515,10 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			var canvasGap = canvasWidth / data.count;
   			var pressureX = [], pressureY = [], speedX = [], speedY = [];
   			for(var i = 0; i < data.count; i++) {
-  				pressureY[i] = canvasWidth / pressureGap * data.pressure[i] - minPressure + (canvas.height - 630);
-  				pressureX[i] = i * canvasGap + 20;
-  				speedY[i] = canvasWidth / speedGap * data.speed[i] - minSpeed + (canvas.height - 200);
-  				speedY[i] -= (speedY[i] - canvas.height + 200) * 2;
-  				speedX[i] = i * canvasGap + 20;
+  				pressureY[i] = totalHeightUp - (canvasHeight / pressureGap * data.pressure[i]);
+  				pressureX[i] = i * canvasGap + totalWidthDown;
+  				speedY[i] = totalHeightUp - (canvasHeight / speedGap * data.speed[i]);
+  				speedX[i] = i * canvasGap + totalWidthDown;
   				if(i > 0) {
   					ctx.beginPath();
   					ctx.moveTo(pressureX[i - 1], pressureY[i - 1]);
@@ -507,8 +535,8 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   				}
   			}
 
-  			ctx.fillText("红线：速度",canvas.width - 100, canvas.height - 100);
-  			ctx.fillText("蓝线：压力",canvas.width - 100, canvas.height - 120);
+  			ctx.fillText("红线 ：速度", totalWidthUp - 80, totalHeightUp + 50);
+  			ctx.fillText("蓝线 ：压力", totalWidthUp - 80, totalHeightUp + 70);
   		}
 
   		function writeChar() {

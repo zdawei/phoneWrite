@@ -15,95 +15,34 @@ define(['jquery', 'lib/writing'], function($, w) {
 				document.body.appendChild(script);
 			},
 
-			changeXY : function(strokeArray, opts) {
-				var charAspectRatio;
-		
-				var minX=strokeArray[0][0].x;
-				var minY=strokeArray[0][0].y;
-				var maxX=strokeArray[0][0].x;
-				var maxY=strokeArray[0][0].y;
-				
-				//Find the global bounding box
-				for(var i=0;i<strokeArray.length;i++){
-					for(var j=0;j<strokeArray[i].length;j++){
-						if(minX>strokeArray[i][j].x){minX=strokeArray[i][j].x;}
-						if(minY>strokeArray[i][j].y){minY=strokeArray[i][j].y;}
-						if(maxX<strokeArray[i][j].x){maxX=strokeArray[i][j].x;}
-						if(maxY<strokeArray[i][j].y){maxY=strokeArray[i][j].y;}
+			changeXY : function(data) {
+				var x = [], y = [], t = [], l = [];
+				var width = canvas.width;
+				var height = canvas.height;
+				var ratio = 30;
+				for(var i = 0; i < data.length; i++) {
+					for(var j = 0; j < data[i].length; j++) {
+						x.push(data[i][j].x);
+						y.push(data[i][j].y);
+						t.push(data[i][j].t);
+						l.push(data[i][j].l);
 					}
 				}
-				var widthX=maxX-minX;
-				var heightY=maxY-minY;
-				var centerX=(minX+maxX)*0.5;
-				var centerY=(minY+maxY)*0.5;
-				// 保存长宽比，不然显示出来的就是1：1
-				
-				var	charAspectRatio=widthX/heightY;
-				
-		
-				//字在区域内显示的比例
-				var scale= opts.charRatio;
-				//if the width is larger, make sure it is within range
-				if( charAspectRatio > 1.0){
-					scale/=charAspectRatio;
+				var maxX = Math.max.apply(Math, x);
+				var minX = Math.min.apply(Math, x);
+				var maxY = Math.max.apply(Math, y);
+				var minY = Math.min.apply(Math, y);
+				for(var r = 0; r < x.length; r++) {
+					x[r] -= minX;
+					y[r] -= minY;
 				}
-		
-				var charBoxWidth = opts.charBoxWidth;
-				var charBoxHeight =  opts.charBoxWidth * opts.aspectRatio;
-		
-				for(var i=0;i<strokeArray.length;i++){
-					for(var j=0;j<strokeArray[i].length;j++){
-						//normalize the coordinates into [-0.5,0.5]	
-						strokeArray[i][j].x=(strokeArray[i][j].x-centerX)*scale/widthX;
-						strokeArray[i][j].y=(strokeArray[i][j].y-centerY)*scale/heightY;
-						//map to canvas space
-						// 缩放需要对应字的比例，固定比例为字的原始比例。
-						strokeArray[i][j].x=(strokeArray[i][j].x*charAspectRatio+0.5)*charBoxWidth+ opts.startPosition.x;
-						//字要缩放一样的倍数，然后平移1/2画布高度。
-						strokeArray[i][j].y=strokeArray[i][j].y*charBoxWidth+0.5*charBoxHeight+ opts.startPosition.y;
-						// arr[i][j].y=(arr[i][j].y+0.5)*charBoxHeight;
-						// 
-						write.pushAll( strokeArray[i][j].x , strokeArray[i][j].y , strokeArray[i][j].t , strokeArray[i][j].l );
-						
-					}
+				var xGap = maxX - minX;
+				var yGap = maxY - minY;
+				for(var k = 0; k < x.length; k++) {
+					var x1 = (width - 2 * ratio) / xGap * x[k] + ratio;
+					var y1 = (height - 2 * ratio) / yGap * y[k] + ratio;
+					write.pushAll(x1, y1, t[k], l[k]);
 				}
-			},
-
-			drawPoint : function(docXML){
-				var strokes = docXML.getElementsByTagName("Stroke");
-				var lock = false;
-				for(var i = 0;i < strokes.length;i++){
-					strokesArray[i] = [];
-					var startMillisecond = strokes[i].getAttribute("startMillisecond").split("");
-					while(startMillisecond.length < 3){
-						startMillisecond.unshift(0);
-					}
-					var timeMillisecond = startMillisecond.join("");
-					var startTime = +(strokes[i].getAttribute("startSecond") + timeMillisecond);
-					for(var j = 0 , length = strokes[i].childNodes.length ;j < length;j++){
-							strokesArray[i][j] = {};
-						if(j == 0){
-							lock = false;
-						}else{
-							lock = true;
-						}
-						var duration = +strokes[i].childNodes[j].getAttribute("deltaTime");
-						startTime += duration;
-						strokesArray[i][j].x = +strokes[i].childNodes[j].getAttribute("x") ;
-						strokesArray[i][j].y = +strokes[i].childNodes[j].getAttribute("y") ;
-						strokesArray[i][j].t = startTime ;
-						strokesArray[i][j].l = lock ;
-					}
-				}
-		
-		
-				changeXY(strokesArray,{
-					charBoxWidth : W.canvas.width ,
-					charRatio : 0.85 ,
-					aspectRatio : 4 / 3 ,
-					startPosition : {x : 0 , y : 0}
-				});
-		
 			},
 
 			xmlcharacterLocal : function() {
@@ -117,37 +56,7 @@ define(['jquery', 'lib/writing'], function($, w) {
 				script.onload = function() {
 					setTimeout(function() {
 						if("undefined" == typeof data) {alert("输入有误!");return ;}
-						fn.changeXY(data, {
-							charBoxWidth : canvas.width ,
-							charRatio : 0.85 ,
-							aspectRatio : 4 / 3 ,
-							startPosition : {x : 0 , y : 0}
-						},500);
-						// drawPoint (docXML);
-						write.clearScreen();
-						write.setDraw(false);
-					},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
-				}
-			},
-
-			outlinecharacterLocal : function() {
-				var char = prompt("请输入一个汉字","张");
-				if(!char) return ;
-				if(!char.length || char.length > 1){alert("输入有误!"); return arguments.callee();}
-				var path = "data\/datajs\/datajs\/"+char+".js";
-				// var path = "http://202.112.195.243/canvas/phoneWrite/datajs/"+char+".js";
-				// var docXML = loadXML(path);
-				fn.loadJsonp(path);
-				script.onload = function() {
-					setTimeout(function() {
-						if("undefined" == typeof data) {alert("输入有误!");return ;}
-						fn.changeXY(data, {
-							charBoxWidth : canvas.width ,
-							charRatio : 0.85 ,
-							aspectRatio : 4 / 3 ,
-							startPosition : {x : 0 , y : 0}
-						},500);
-						// drawPoint (docXML);
+						fn.changeXY(data);
 						write.clearScreen();
 						write.setDraw(false);
 					},500);//为了cordova加入了时间延迟，要不然会有读取汉字库显示出以前的汉字的bug
@@ -205,7 +114,6 @@ define(['jquery', 'lib/writing'], function($, w) {
 			framework : function() {
 			  //顶导的笔画框架
 			  	$('#whichCanvas p').text('框架');
-				write.drawFrameWork();
 			},
 
 			nextChar : function() {

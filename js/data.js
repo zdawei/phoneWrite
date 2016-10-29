@@ -1,7 +1,6 @@
 define(['jquery'], function($) {
 	var datas = [];
-	// var data = {
-	window.data = {
+	var data = {
 	  	x : [],//x坐标
   		y : [],//y坐标
   		time : [],//时间
@@ -27,6 +26,7 @@ define(['jquery'], function($) {
 
 	return function() {
 		var that = {
+		// window.that = {
 			clear : function() {
 				data.x=[];
 		  		data.y=[];
@@ -99,7 +99,7 @@ define(['jquery'], function($) {
 			},
 
 			logData : function() {
-				console.log(data,account);
+				console.log(data);
 			}
 		};
 
