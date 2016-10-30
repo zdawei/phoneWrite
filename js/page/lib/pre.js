@@ -39,11 +39,11 @@ var _sec = {
 		'</div>'+
 		//以下调整
 		'<ul class="dropdown-menu" style="position:absolute;top:8%;left:25%"  role="menu" id="shape">'+
-			'<li><a href="#" data-shape="1" >普通形</a></li>'+
-			'<li><a href="#" data-shape="2">十字形</a></li>'+
-			'<li><a href="#" data-shape="3">门字形</a></li>'+
+			'<li><a href="javascript:void(0);" data-shape="1" >普通形</a></li>'+
+			'<li><a href="javascript:void(0);" data-shape="2">十字形</a></li>'+
+			'<li><a href="javascript:void(0);" data-shape="3">门字形</a></li>'+
 			'<li class="divider"></li>'+
-			'<li><a href="#" data-shape="0">随机</a></li>'+
+			'<li><a href="javascript:void(0);" data-shape="0">随机</a></li>'+
 		'</ul>'
 	}
 	,init : function() {

@@ -519,22 +519,29 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   				pressureX[i] = i * canvasGap + totalWidthDown;
   				speedY[i] = totalHeightUp - (canvasHeight / speedGap * data.speed[i]);
   				speedX[i] = i * canvasGap + totalWidthDown;
-  				if(i > 0) {
+  			}
+  			var maxPressureY = Math.max.apply(Math, pressureY);  			
+  			var maxSpeedY = Math.max.apply(Math, speedY);
+  			var pressureYGap = totalHeightUp - maxPressureY;
+  			var speedYGap = totalHeightUp - maxSpeedY;
+  			for(var k = 0; k < data.count; k++) {
+  				pressureY[k] = pressureYGap > 0 ? pressureY[k] + pressureYGap : pressureY[k];
+  				speedY[k] = speedYGap > 0 ? speedY[k] + speedYGap : speedY[k];
+  				if(k > 0) {
   					ctx.beginPath();
-  					ctx.moveTo(pressureX[i - 1], pressureY[i - 1]);
-  					ctx.lineTo(pressureX[i], pressureY[i]);
+  					ctx.moveTo(pressureX[k - 1], pressureY[k - 1]);
+  					ctx.lineTo(pressureX[k], pressureY[k]);
   					ctx.lineWidth = 2;
   					ctx.strokeStyle = "blue";
   					ctx.stroke();
   					ctx.beginPath();
-  					ctx.moveTo(speedX[i - 1], speedY[i - 1]);
-  					ctx.lineTo(speedX[i], speedY[i]);
+  					ctx.moveTo(speedX[k - 1], speedY[k - 1]);
+  					ctx.lineTo(speedX[k], speedY[k]);
   					ctx.lineWidth = 1;
   					ctx.strokeStyle = "red";
   					ctx.stroke();
   				}
   			}
-
   			ctx.fillText("红线 ：速度", totalWidthUp - 80, totalHeightUp + 50);
   			ctx.fillText("蓝线 ：压力", totalWidthUp - 80, totalHeightUp + 70);
   		}

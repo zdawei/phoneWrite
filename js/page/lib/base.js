@@ -52,7 +52,7 @@ _sec.pre = function() {
 	};
 
 	var bindDOM = function() {
-		image.src = "img/model.png";
+		image.src = "img/model-black.png";
 		$(screenCanvas);
 		image.onload = function() {
 			writingChar();
