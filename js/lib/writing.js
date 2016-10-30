@@ -1,3 +1,28 @@
+/*
+* @fileoverview 此文件用于初始化毛笔字项目
+* @author dawei | weiweicat333@gmail.com
+* @describe 外抛方法：
+* 运行模块 需要传递两个参数，canvas 用于写毛笔的node节点，image笔刷模型
+* init : 初始化
+* pushAll : push和计算剩余的节点，参数： 坐标点，时间值，lock笔画锁
+* drawFrameWork : 汉字的框架点，参数：布尔值，true：绘制带有压力感应的框架点，false：绘制无压力感应的框架点
+* animation : 汉字动画，参数：布尔值，true:绘制带有时间感应的动画，false：绘制无时间感应的动画
+* nextChar : 获取下一个汉字数据，如果没有，就获取初始化的数据，并更新当前画板数据
+* preChar : 获取前一个汉字数据，并更新当前画板数据
+* setDraw : 绘制汉字（真正的绘制），参数，1.布尔值：true：按点绘制，false：按整字绘制，2.count值，如果第一个参数为true，需要此参数
+* setArg : 通过页面的参数调节节点，设置汉字数据的初始值的综合方法，参数：1.需要修改初始值的名称，2.需要修改初始值的值
+*          如果修改curve值的话，第3,4参数为setDraw所需的参数，
+*		   如果修改color值的话，第3个参数为true,给setDraw传递值所需。
+*		   如果修改其他值的话，第3个参数为：true，传递数值，false，传递字符串
+* setChar : 把所有汉字数据存放到localstorage里
+* revertChar : 撤销汉字一个笔画
+* strokeAnalysis : 笔画分析，用不同的彩色绘制不同的笔画
+* charMessage : 汉字数据的二维图信息
+* writeChar : 打开画板写字权限，绘制当前汉字数据
+* clearPrint : 清空画板并且清空当前汉字数据
+* clearScreen : 清空画板
+*/
+
 define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 
 	var $data = d();

@@ -26,7 +26,6 @@ define(['jquery'], function($) {
 
 	return function() {
 		var that = {
-		// window.that = {
 			clear : function() {
 				data.x=[];
 		  		data.y=[];
