@@ -6,6 +6,6 @@ require.config({
 	}
 });
 
-require(['home/init'], function(init) {
+require(['jquery', 'home/init'], function($, init) {
 	init();
 });
