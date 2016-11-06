@@ -21,6 +21,7 @@
 * writeChar : 打开画板写字权限，绘制当前汉字数据
 * clearPrint : 清空画板并且清空当前汉字数据
 * clearScreen : 清空画板
+* writeParam : 更新参数表单的值
 */
 
 define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
@@ -170,110 +171,55 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   		  }
   		}
 
+  		function countSlope(x1, y1, x2, y2, x3, y3, x4, y4, count) {
+  			var a = {}, b = {};
+  			if(x3 - x1 == 0) {x3 += 0.1;}
+  			if(x2 - x4 == 0) {x2 += 0.1;}
+  			var preSlope = (y3 - y1) / (x3 - x1);//这点有点问题,无穷大的问题
+  			var howlong = distance(x2, y2, x3, y3) / data.threeCurveDistance;
+  			var pressureGap = (data.pressure[count - 2] - data.pressure[count -3]) / 3;
+  			// y = preSlope * (x - x2) + y2;
+  			// (y - y2) * (y - y2) + (x - x2) * (x - x2) = howlong * howlong;
+  			// 两个式子代入，消去y
+  			a.x = Math.sqrt((howlong * howlong) / (preSlope * preSlope + 1)) + x2;
+  			a.y = preSlope * (a.x - x2) + y2;
+  			a.w = data.pressure[count - 3] + pressureGap;
+  			var endSlope = (y2-y4)/(x2-x4);
+			b.x = Math.sqrt((howlong * howlong) / (endSlope * endSlope + 1)) + x3;
+  			b.y = endSlope * (b.x - x3) + y3;  			
+  			b.w = data.pressure[count -2] - pressureGap;
+  			return {
+  				a : a,
+  				b : b
+  			}
+  		};
+
 		var threeDraw = function(count) { 
-			if(!data.locks[count - 2] || count < 3) {return ;}
-			// 三次贝塞尔曲线
-			var d1, sampleNumber;
-			var tempX,tempY,tempW;
-			var c_a = 4;
-			var x1,x2,x3,x4,
-				y1,y2,y3,y4,
-				w1,w2,w3,w4;
-			//三次贝塞尔曲线的控制点
-			var a2,a3,b2,b3;
-			d1 = data.distance[count - 1];
+			if(count < 4 || !data.locks[count - 2]) {return ;}
+			var controlPots = countSlope(
+				data.x[count - 4], data.y[count - 4], data.x[count - 3], data.y[count - 3],
+				data.x[count - 2], data.y[count - 2], data.x[count - 1], data.y[count - 1], count);
+			var sampleNumber, tempX, tempY, tempW;
+			var d1 = data.distance[count - 1];
 			sampleNumber = parseInt(d1 / data.density);
-
-			x2 = data.x[count - 3];
-			x3 = data.x[count - 2];
-			x4 = data.x[count - 1];
-			
-			y2 = data.y[count - 3];
-			y3 = data.y[count - 2];
-			y4 = data.y[count - 1];
-              
-			v2 = data.speed[count - 3];
-			v3 = data.speed[count - 2];
-			v4 = data.speed[count - 1];
-
-      		w1 = data.pressure[count - 4];
-			w2 = data.pressure[count - 3];
-			w3 = data.pressure[count - 2];
-			w4 = data.pressure[count - 1];
-
-			var dis23 = data.distance[count - 2];
-			var dis34 = d1;
-			var dis24 = Math.sqrt( (x4-x2) * (x4-x2) + (y4-y2)*(y4-y2));
-
-			if(count == 3) {       
-				var disAvg = dis23 / (3.0 * dis24); 
-			  	b2 = {
-				    x: x3 - disAvg * (x4 - x2),
-				    y: y3 - disAvg * (y4 - y2),
-				    v: v3 - (v4 - v2) / 6,
-			    	w: w3 - (w4 - w2) / 6 
-			    };
-			    a2 = {
-				    x: b2.x - (x3 - x2) / 3,
-				    y: b2.y - (y3 - y2) / 3,
-				    v: b2.v - (v3 - v2) / 3,
-				    w: b2.w - (w3 - w2) / 3
-			    };
-			} else {
-				x1 = data.x[count - 4];
-				y1 = data.y[count - 4];
-				v1 = data.speed[count - 4];
-				w1 = data.pressure[count - 4]; 
-				var dis13 = Math.sqrt( (x3-x1) * (x3-x1) + (y3-y1)*(y3-y1));
-				var dis12 = Math.sqrt( (x2-x1) * (x2-x1) + (y2-y1)*(y2-y1));
-				var disAvg = dis23/(3.0 * dis13); 
-				var factor = 1/6;          
-				a2 = {
-					    x: x2 + disAvg *(x3-x1) ,
-					    y: y2 + disAvg *(y3-y1),
-					    w: w2 + (w3-w1) * factor,
-					    v: v2 + (v3-v1) * factor
-				    };
-				disAvg = dis34/(3.0 * dis24);
-			    b2 = {
-				    x: x3 - disAvg *(x4-x2),
-				    y: y3 - disAvg *(y4-y2),
-				    w: w3 - (w4-w2) * factor,
-				    v: v3 - (v4-v2) * factor
-    			};
-				var perpA = ((x3-x1)*(x3-x2) + (y3-y1)*(y3-y2))/(dis23 * dis13); //cosine of the angle
-				var perpB = ((x2-x4)*(x2-x3) + (y2-y4)*(y2-y3))/(dis23 * dis24);
-				if( perpA > perpB ) {
-					perpA = (dis23/3) * Math.sqrt(1 - perpA * perpA);
-					perpA = perpA /  Math.sqrt(1 - perpB * perpB);
-					b2.x = x3 - perpA *(x4-x2)/dis24;
-					b2.y = y3 - perpA *(y4-y2)/dis24;
-				}else{
-					//sine value                      
-					perpB = (dis23/3) * Math.sqrt(1 - perpB * perpB);
-					perpB = perpB /  Math.sqrt(1 - perpA * perpA);
-					a2.x = x2 + perpA *(x3-x1)/dis13;
-					a2.y = y2 + perpA *(y3-y1)/dis13;
-      			}
-	        }
 			for(var u=0; u<sampleNumber; u++) {
 				var t = u/(sampleNumber-1);
-				tempX = (1-t)*(1-t)*(1-t)*x2
-								+t*(1-t)*(1-t)*3*a2.x
-								+t*t*(1-t)*3*b2.x
-								+t*t*t*x3;
-				tempY = (1-t)*(1-t)*(1-t)*y2
-								+t*(1-t)*(1-t)*3*a2.y
-								+t*t*(1-t)*3*b2.y
-								+t*t*t*y3;
-				tempW = (1-t)*(1-t)*(1-t)*w2
-				 				+t*(1-t)*(1-t)*3*a2.w
-			     				+t*t*(1-t)*3*b2.w
-				 				+t*t*t*w3;
- 				tempW = Math.min(Math.max(tempW, data.minPress), data.maxPress);
- 				opts.threeCurve && (tempW = (tempW + opts.threeCurve) / 2);
+				tempX = (1-t)*(1-t)*(1-t)*data.x[count - 3]
+								+t*(1-t)*(1-t)*3*controlPots.a.x
+								+t*t*(1-t)*3*controlPots.b.x
+								+t*t*t*data.x[count - 2];
+				tempY = (1-t)*(1-t)*(1-t)*data.y[count - 3]
+								+t*(1-t)*(1-t)*3*controlPots.a.y
+								+t*t*(1-t)*3*controlPots.b.y
+								+t*t*t*data.y[count - 2];
+				tempW = (1-t)*(1-t)*(1-t)*data.pressure[count - 3]
+				 				+t*(1-t)*(1-t)*3*controlPots.a.w
+			     				+t*t*(1-t)*3*controlPots.b.w
+				 				+t*t*t*data.pressure[count - 2];
+ 				// tempW = Math.min(Math.max(tempW, data.minPress), data.maxPress);
+ 				// opts.threeCurve && (tempW = (tempW + opts.threeCurve) / 2);
 				ctx.drawImage(image,tempX-tempW,tempY-tempW, data.width*2*tempW,data.width*2*tempW);
- 				opts.threeCurve = tempW
+ 				// opts.threeCurve = tempW
 			}
 		};
 
@@ -515,7 +461,25 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			preProcess();
   		}
 
-  		function charMessage() {
+  		function charMessage(count) {
+  			if(count == 'all') {
+  				allChar();
+  				return ;
+  			}
+  			var account = Number(count);
+  			var message = 0;
+  			var i = 0;
+  			var speed = [], pressure = [];
+  			for(; i < data.count; i++) {
+  				if(!data.locks[i]) {message++;}
+  				if(message == account) {break;}
+  			}
+  			speed[0] = data.speed[i];
+  			pressure[0] = data.pressure[i];
+  			for(; data.locks[++i]; ) {
+  				speed.push(data.speed[i]);
+  				pressure.push(data.pressure[i]);
+  			}
   			var ctx = canvas.getContext('2d');
   			var totalHeightUp = canvas.height - 100;
   			var totalHeightDown = 100;
@@ -525,6 +489,128 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
   			writeOpen(false);
   			ctx.beginPath();
   			ctx.moveTo(totalWidthDown, totalHeightDown);
+  			ctx.strokeStyle = "black";
+  			ctx.lineTo(totalWidthDown, totalHeightUp);
+  			ctx.lineTo(totalWidthUp, totalHeightUp);
+  			ctx.lineWidth = 1;
+  			ctx.stroke();
+  			var canvasWidth = totalWidthUp - totalWidthDown;
+  			var canvasHeight = totalHeightUp - totalHeightDown;
+  			var maxPressure = Math.max.apply(Math, pressure);
+  			var minPressure = Math.min.apply(Math, pressure);
+  			var pressureGap = maxPressure - minPressure;
+  			var maxSpeed = Math.max.apply(Math, speed);
+  			var minSpeed = Math.min.apply(Math, speed);
+  			var speedGap = maxSpeed - minSpeed;
+  			var canvasGap = canvasWidth / speed.length;
+  			var pressureX = [], pressureY = [], speedX = [], speedY = [];
+  			for(var i = 0; i < speed.length; i++) {
+  				pressureY[i] = totalHeightUp - (canvasHeight / pressureGap * pressure[i]);
+  				pressureX[i] = i * canvasGap + totalWidthDown;
+  				speedY[i] = totalHeightUp - (canvasHeight / speedGap * speed[i]);
+  				speedX[i] = i * canvasGap + totalWidthDown;
+  			}
+  			var maxPressureY = Math.max.apply(Math, pressureY);  			
+  			var maxSpeedY = Math.max.apply(Math, speedY);
+  			var pressureYGap = totalHeightUp - maxPressureY;
+  			var speedYGap = totalHeightUp - maxSpeedY;
+  			for(var k = 0; k < speed.length; k++) {
+  				pressureY[k] = pressureYGap > 0 ? pressureY[k] + pressureYGap : pressureY[k];
+  				speedY[k] = speedYGap > 0 ? speedY[k] + speedYGap : speedY[k];
+  				if(k > 0) {
+  					ctx.beginPath();
+  					ctx.moveTo(pressureX[k - 1], pressureY[k - 1]);
+  					ctx.lineTo(pressureX[k], pressureY[k]);
+  					ctx.lineWidth = 2;
+  					ctx.strokeStyle = "blue";
+  					ctx.stroke();
+  					ctx.beginPath();
+  					ctx.moveTo(speedX[k - 1], speedY[k - 1]);
+  					ctx.lineTo(speedX[k], speedY[k]);
+  					ctx.lineWidth = 1;
+  					ctx.strokeStyle = "red";
+  					ctx.stroke();
+  				}
+  			}
+  			ctx.fillText("红线 ：速度", totalWidthUp - 80, totalHeightUp + 50);
+  			ctx.fillText("蓝线 ：压力", totalWidthUp - 80, totalHeightUp + 70);
+
+  		}
+
+  		function charGraphicInit(jqNode) {
+  			var count = 0, str= '';
+  			var canvasW = canvas.width;
+  			var canvasH = canvas.height;
+  			var ratio = canvasW / canvasH;
+  			var canvasWidth = 100;
+  			var canvasHeight = canvasWidth / ratio;
+  			jqNode.empty();window.data = data;
+  			for(var i = 0; i < data.count; i++) {
+  				if(!data.locks[i]) {
+  					count++; 
+  					str += '<canvas count="' + count + '" style="width:' + canvasWidth + 'px;height:' + canvasHeight + 'px;border:1px black solid;"></canvas>';
+  				}
+  			}
+  			if(count != 1) {
+  				str += '<canvas count="all" style="width:' + canvasWidth + 'px;height:' + canvasHeight + 'px;border:1px black solid;"></canvas>';
+  			}
+  			jqNode.append(str);
+  			for(var writeCount = 1; writeCount <= count + 1; writeCount++) {
+  				var c = (writeCount != count + 1) ? $('[count=' + writeCount + ']')[0] : $('[count=all]')[0];
+  				if(count == 1) {c = $('[count=1]')[0];}
+  				var ctx = c.getContext('2d');
+  				var x = [],y = [],w = [];
+  				for(var r = 0; r < data.count; r++) {
+  					x[r] = data.x[r];
+  					y[r] = data.y[r];
+  					// w[r] = data.pressure[r];
+  				}
+  				var maxX = Math.max.apply(this, x);
+	  			var minX = Math.min.apply(this, x);
+	  			var maxY = Math.max.apply(this, y);
+	  			var minY = Math.min.apply(this, y);
+	  			// var minW = Math.min.apply(this, w);
+	  			var gapW = maxX - minX;
+	  			var gapH = maxY - minY;
+	  			var canvasCount = 0;
+	  			for(var k = 0; k < x.length; k++) {
+	  				x[k] -= minX;
+	  				y[k] -= minY;
+	  				// w[k] -= minW;
+  					x[k] = (x[k] / gapW) * (c.width);
+  					y[k] = (y[k] / gapH) * (c.height);
+  					// w[k] = (w[k] / (gapW * gapH)) * c.width * c.height;
+  					!data.locks[k] && canvasCount++;
+	                if(!data.locks[k]) {continue;}
+	  		        var sampleNumber = 100;
+  					ctx.beginPath();
+  					ctx.moveTo(x[k - 1], y[k - 1]);
+  					ctx.lineTo(x[k], y[k]);
+  					ctx.lineWidth = 5;
+  					ctx.strokeStyle = (canvasCount == writeCount) || (writeCount == count + 1)? 'red' : 'black';
+  					ctx.stroke();
+  		      		// for(var u = 0; u < sampleNumber; u++) {
+  		      		//   	var t = u / (sampleNumber - 1);
+  		      		//   	var x1 = (1.0 - t) * x[k - 1] + t * x[k];
+  		      		//   	var y1 = (1.0 - t) * y[k - 1] + t * y[k];
+  		      		//   	var w1 = (1.0 - t) * w[k - 1] + t * w[k];
+  		      		//   	ctx.drawImage(image,x1 - w1,y1 - w1,w1 * 100,w1 * 100);
+  		      		// }
+  				}
+  			}
+  		}
+
+  		function allChar() {
+  			var ctx = canvas.getContext('2d');
+  			var totalHeightUp = canvas.height - 100;
+  			var totalHeightDown = 100;
+  			var totalWidthUp = canvas.width - 20;
+  			var totalWidthDown = 20;
+  			ctx.clearRect(0,0,canvas.width,canvas.height);
+  			writeOpen(false);
+  			ctx.beginPath();
+  			ctx.moveTo(totalWidthDown, totalHeightDown);
+  			ctx.strokeStyle = "black";
   			ctx.lineTo(totalWidthDown, totalHeightUp);
   			ctx.lineTo(totalWidthUp, totalHeightUp);
   			ctx.lineWidth = 1;
@@ -635,6 +721,13 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 		  }
 		};
 
+		var writeParam = function(lis) {
+			for(var i = 0; i < lis.length; i++) {
+				var input = lis[i].querySelector('input');
+				input.value = data[input.name];
+			}
+		};
+
 		var init = function() {
 			writeOpen(true);
 		};
@@ -652,7 +745,9 @@ define(['jquery', 'data', 'homeLib/setcanvas'], function($, d, s) {
 			revertChar : revertChar,
 			strokeAnalysis : strokeAnalysis,
 			charMessage : charMessage,
+			charGraphicInit : charGraphicInit,
 			writeChar : writeChar,
+			writeParam : writeParam,
 			clearPrint : clearPrint,
 			clearScreen : clearScreen
 		};

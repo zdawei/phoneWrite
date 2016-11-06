@@ -1,4 +1,4 @@
-define(['jquery', 'lib/writing'], function($, w) {
+define(['jquery', 'lib/writing', 'bootstrap'], function($, w) {
 
 	return function(canvas, image) {
 
@@ -70,36 +70,43 @@ define(['jquery', 'lib/writing'], function($, w) {
 					case 'sigmoid' : paramNode.html('<p>sigmoid<input name = \"sigmoid\"  type = \"range\" max = \"10.0\"  min = \"1.0\"  step = \"1\" value = \"3\"  /></p>'); break;
 					case 'cos' : paramNode.html('<p>cos<input name = \"cos\"  type = \"range\" max = \"2.0\"  min = \"0.1\"  step = \"0.1\" value = \"1\"  /></p>'); break;
 					case 'acceleration' : paramNode.html('<p>acceleration<input name = \"acceleration\"  type = \"range\" max = \"10.0\"  min = \"0.1\"  step = \"0.1\" value = \"0.5\"  /></p>'); break;
+					case 'threeCurveDistance' : if($('.threeCurveDistance').length == 0) {paramNode.after('<li class="list-group-item threeCurveDistance"><p>threeCurveDistance<input name = \"threeCurveDistance\"  type = \"range\" max = \"5.0\"  min = \"1.0\"  step = \"0.1\" value = \"3\"  /></p></li>');} break;
 				}
 			},
 
 			formFunc : function() {
-				var forms = document.forms;
-				forms[0].addEventListener("click",function(e) {
+				$('#animationForm').on("click",function(e) {
 					switch($(e.target).text()) {
 						case "time" : write.animation(true);break;
 						case "normal" : write.animation(false);break;
 					}
-				},false);				
-				forms[1].addEventListener("click",function(e) {
+				}).dropdown();				
+				$('#frameworkForm').on("click",function(e) {
 					switch($(e.target).text()) {
 						case "pressure" : write.drawFrameWork(true);break;
 						case "normal" : write.drawFrameWork(false);break;
 					}
-				},false);				
-				forms[2].addEventListener("change",function(e) {
+				}).dropdown();				
+				$('#handwritingForm').on("change",function(e) {
+					if($('#whichCanvas p').text() == '框架') {return;}
 					write.setArg(e.target.name,e.target.value, true);
-				},false);
-				forms[3].addEventListener("click",function(e) {
+				}).dropdown();
+				$('#settingWidthForm').on("click",function(e) {
 					fn.formProcess($(e.target).text());
 					write.setArg('widthFunc', $(e.target).text(), false);
-				},false);
-				forms[4].addEventListener("click",function(e) {
+				}).dropdown();
+				$('#settingCurveForm').on("click",function(e) {
+					var threeOrder = $('.threeCurveDistance');
+					if($(e.target).text() == '3 order Bézier') {
+						fn.formProcess('threeCurveDistance');
+					} else if(threeOrder.length != 0) {
+						threeOrder.remove();
+					}
 					write.setArg('curve', $(e.target).text(), false);
-				},false);
-				forms[5].addEventListener("click",function(e) {
+				}).dropdown();
+				$('#colorForm').on("click",function(e) {
 					write.setArg('color', $(e.target).text(), false);
-				},false);
+				}).dropdown();
 			},
 
 			animation : function() {
@@ -144,13 +151,24 @@ define(['jquery', 'lib/writing'], function($, w) {
   			},
 
   			charMessage : function() {
+  				write.charGraphicInit($('#graphicMessage'));
+  			},
+
+  			graphicMessage : function(e) {
   				$('#whichCanvas p').text('二维信息');
-  				write.charMessage();
+  				var count = e.target.getAttribute('count');
+  				count && write.charMessage(count);
+  				$('#myModal').modal('hide');
   			},
 
   			writeChar : function() {
   				$('#whichCanvas p').text('写字');
   				write.writeChar();
+  			},
+
+  			handwriting : function(e) {
+  				var lis = document.forms[2].getElementsByTagName('li');
+  				write.writeParam(lis);
   			}
 
 		};
@@ -175,8 +193,10 @@ define(['jquery', 'lib/writing'], function($, w) {
 					case "writeChar" : fn.writeChar();break;
 					case "animation" : fn.animation();break;
 					case "framework" : fn.framework();break;
+					case "handwriting" : fn.handwriting();break;
 				}
 			});
+			$('#graphicMessage').on('click', fn.graphicMessage);
 		};
 
 		var that = {init : init}

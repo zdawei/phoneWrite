@@ -18,6 +18,7 @@ define(['jquery'], function($) {
   		maxPress : 0.2,
   		width : 50,
     	density : 0.5,
+    	threeCurveDistance : 3,
     	// 宽度，曲线处理初始值
     	widthFunc : 'gaussian',//处理宽度函数的初始值
     	curve : '1 order Bézier'
